@@ -5,9 +5,12 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 // ==========================================
 export interface IUser extends Document {
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
   displayName: string;
   role: "user" | "admin";
+  authProvider?: "local" | "google";
+  firebaseUid?: string;
+  fcmTokens?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,9 +18,12 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>(
   {
     email: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
-    passwordHash: { type: String, required: true },
+    passwordHash: { type: String, required: false },
     displayName: { type: String, required: true, trim: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    authProvider: { type: String, enum: ["local", "google"], default: "local" },
+    firebaseUid: { type: String, sparse: true },
+    fcmTokens: { type: [String], default: [] },
   },
   { timestamps: true }
 );
@@ -505,6 +511,35 @@ const PredictionSchema = new Schema<IPrediction>(
 );
 PredictionSchema.index({ symbol: 1, timestamp: -1 });
 
+// ==========================================
+// 16. In-App Notification Model
+// ==========================================
+export interface INotification extends Document {
+  userId: Types.ObjectId;
+  type: "order" | "stock" | "risk" | "system";
+  title: string;
+  message: string;
+  symbol?: string;
+  read: boolean;
+  data?: any;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const NotificationSchema = new Schema<INotification>(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    type: { type: String, enum: ["order", "stock", "risk", "system"], default: "system" },
+    title: { type: String, required: true },
+    message: { type: String, required: true },
+    symbol: { type: String },
+    read: { type: Boolean, default: false },
+    data: { type: Schema.Types.Mixed },
+  },
+  { timestamps: true }
+);
+NotificationSchema.index({ userId: 1, createdAt: -1 });
+
 // Compile and export models
 export const User = mongoose.model<IUser>("User", UserSchema);
 export const RiskProfile = mongoose.model<IRiskProfile>("RiskProfile", RiskProfileSchema);
@@ -521,4 +556,6 @@ export const RiskEvent = mongoose.model<IRiskEvent>("RiskEvent", RiskEventSchema
 export const KillSwitchState = mongoose.model<IKillSwitchState>("KillSwitchState", KillSwitchStateSchema);
 export const AuditLog = mongoose.model<IAuditLog>("AuditLog", AuditLogSchema);
 export const Prediction = mongoose.model<IPrediction>("Prediction", PredictionSchema);
+export const Notification = mongoose.model<INotification>("Notification", NotificationSchema);
+
 

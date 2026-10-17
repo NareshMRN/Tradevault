@@ -5,6 +5,7 @@ import { requireAuth } from "../middleware/auth";
 import { validateBody } from "../middleware/validate";
 import { CurrentPriceService } from "../market/currentPriceService";
 import { PaperTradingService } from "../services/paperTradingService";
+import { notifyOrderEvent } from "../services/fcmService";
 
 export const proposalsRouter = Router();
 
@@ -134,6 +135,17 @@ proposalsRouter.post(
       proposal.status = "approved";
       proposal.reviewedAt = new Date();
       await proposal.save().catch(() => null);
+
+      // Push notification
+      try {
+        await notifyOrderEvent(req.user!.id, {
+          ticker: proposal.ticker,
+          side: proposal.action,
+          qty: quantity,
+          status: "filled",
+          filledPrice: order?.price || 0,
+        });
+      } catch (e) {}
 
       res.json({
         success: true,

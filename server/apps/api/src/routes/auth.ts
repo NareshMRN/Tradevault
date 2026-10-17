@@ -6,6 +6,7 @@ import { User, RiskProfile } from "../db/models";
 import { inMemoryStore } from "../db/inMemoryStore";
 import { env } from "../config/env";
 import { requireAuth } from "../middleware/auth";
+import { verifyGoogleIdToken } from "../services/firebaseAdmin";
 
 export const authRouter = Router();
 
@@ -207,3 +208,84 @@ authRouter.get("/me", requireAuth, async (req: Request, res: Response): Promise<
     res.status(500).json({ error: err.message });
   }
 });
+
+// Google Sign-In & Sign-Up via Firebase ID Token
+authRouter.post("/google", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { idToken, displayName: clientDisplayName } = req.body;
+    if (!idToken) {
+      res.status(400).json({ error: "Missing required field: idToken" });
+      return;
+    }
+
+    const verified = await verifyGoogleIdToken(idToken);
+    const email = verified.email.toLowerCase().trim();
+    const displayName = (verified.name || clientDisplayName || email.split("@")[0] || "Trader").trim();
+    const isDbReady = mongoose.connection.readyState === 1;
+
+    let user: any = null;
+
+    if (isDbReady) {
+      user = await User.findOne({
+        $or: [{ email }, { firebaseUid: verified.uid }],
+      });
+
+      if (!user) {
+        // Create new user via Google
+        user = await User.create({
+          email,
+          displayName,
+          role: "user",
+          authProvider: "google",
+          firebaseUid: verified.uid,
+        });
+      } else {
+        // Link Google UID if missing
+        if (!user.firebaseUid) {
+          user.firebaseUid = verified.uid;
+          await user.save();
+        }
+      }
+    } else {
+      // In-memory mode
+      user = await inMemoryStore.findUserByEmail(email);
+      if (!user) {
+        user = await inMemoryStore.createUser({
+          email,
+          displayName,
+          role: "user",
+          authProvider: "google",
+          firebaseUid: verified.uid,
+        });
+        console.log(`[Auth] Registered Google user ${email} in in-memory session.`);
+      }
+    }
+
+    const token = jwt.sign(
+      { id: (user._id || user.id).toString(), email: user.email, role: user.role, displayName: user.displayName },
+      env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie(env.SESSION_COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      user: {
+        id: (user._id || user.id).toString(),
+        email: user.email,
+        displayName: user.displayName,
+        role: user.role,
+      },
+      token,
+    });
+  } catch (err: any) {
+    console.error("[Auth.google] Error:", err);
+    res.status(401).json({ error: err.message || "Google authentication failed." });
+  }
+});
+

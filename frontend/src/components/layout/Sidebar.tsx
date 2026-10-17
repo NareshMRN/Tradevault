@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Layers, Sparkles, Wallet, Network, List, History, Settings, X, Cpu
+  LayoutDashboard, Layers, Sparkles, Wallet, Network, List, History, Settings, X, Cpu, Bell
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAuthStore } from '@/store/authStore';
 import { useLanguageStore } from '@/store/languageStore';
+import { useNotificationStore } from '@/store/notificationStore';
 import logoImg from '@/assets/logo.png';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
@@ -20,6 +21,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const { user } = useAuthStore();
   const { t } = useLanguageStore();
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
 
   const navigation = [
     { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard },
@@ -30,6 +32,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     { name: t('debate'), href: '/orchestration', icon: Network },
     { name: t('watchlist'), href: '/watchlist', icon: List },
     { name: t('orders'), href: '/orders', icon: History },
+    { name: 'Notifications', href: '/notifications', icon: Bell },
     { name: t('settings'), href: '/settings/risk', icon: Settings },
   ];
 
@@ -90,16 +93,20 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     />
                     <span className="truncate">{item.name}</span>
                   </div>
-                  {item.badge && (
+                  {item.href === '/notifications' && unreadCount > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white shadow-xs">
+                      {unreadCount}
+                    </span>
+                  ) : (item as any).badge ? (
                     <span className={cn(
                       "text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
-                      item.badge === 'AI'
+                      (item as any).badge === 'AI'
                         ? 'bg-indigo-100 text-indigo-700'
                         : 'bg-emerald-100 text-emerald-800'
                     )}>
-                      {item.badge}
+                      {(item as any).badge}
                     </span>
-                  )}
+                  ) : null}
                 </>
               )}
             </NavLink>

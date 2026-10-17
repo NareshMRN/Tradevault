@@ -1,10 +1,11 @@
-import { Bell, Menu, LogOut, Globe, Sparkles, ChevronDown } from 'lucide-react';
+import { Bell, Menu, LogOut, Globe, Sparkles, ChevronDown, X, ShoppingCart, TrendingUp, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useLanguageStore, type SupportedLanguage } from '@/store/languageStore';
 import { useMarketStatusStore } from '@/store/marketStatusStore';
+import { useNotificationStore } from '@/store/notificationStore';
 import { formatISTNextOpen } from '@/utils/istDate';
-import { useNavigate } from 'react-router-dom';
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -19,9 +20,11 @@ const languages: { code: SupportedLanguage; label: string; native: string }[] = 
 export function TopBar({ onMenuClick }: TopBarProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showNotificationMenu, setShowNotificationMenu] = useState(false);
   const { user, logout } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const { status } = useMarketStatusStore();
+  const { notifications, unreadCount, markAllAsRead, activeToast, dismissToast } = useNotificationStore();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -41,17 +44,43 @@ export function TopBar({ onMenuClick }: TopBarProps) {
     ? 'NSE Open'
     : status?.state === 'PRE_OPEN'
       ? 'NSE Pre-Open'
-      : 'Trading Closed Today';
+      : 'Market Closed';
+
+  const recentNotifications = notifications.slice(0, 5);
 
   return (
-    <header className="flex flex-col border-b border-border bg-white shadow-sm z-20">
-      {/* SEBI Educational Disclaimer Banner */}
-      {/* <div className="bg-amber-500/10 border-b border-amber-500/20 px-3 py-1.5 text-xs text-amber-900 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 font-medium truncate mx-auto text-[11px] sm:text-xs">
-          <ShieldAlert className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-          <span>{t('sebi_disclaimer')}</span>
+    <header className="flex flex-col border-b border-border bg-white shadow-sm z-20 relative">
+      {/* Floating In-App Toast Alert */}
+      {activeToast && (
+        <div className="absolute top-16 right-6 z-50 max-w-sm w-full bg-slate-900 text-white rounded-2xl p-4 shadow-2xl border border-indigo-500/30 flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="h-8 w-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
+            {activeToast.type === 'order' ? (
+              <ShoppingCart className="h-4 w-4 text-emerald-400" />
+            ) : (
+              <TrendingUp className="h-4 w-4 text-indigo-400" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-white tracking-tight truncate">{activeToast.title}</p>
+            <p className="text-[11px] text-slate-300 line-clamp-2 mt-0.5">{activeToast.message}</p>
+            <button
+              onClick={() => {
+                dismissToast();
+                navigate('/notifications');
+              }}
+              className="mt-2 text-[10px] text-indigo-400 font-semibold hover:underline flex items-center gap-1"
+            >
+              Open Notifications <ExternalLink className="h-2.5 w-2.5" />
+            </button>
+          </div>
+          <button
+            onClick={dismissToast}
+            className="text-slate-400 hover:text-white p-1 rounded-md"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
         </div>
-      </div> */}
+      )}
 
       {/* Main Bar */}
       <div className="flex h-14 shrink-0 items-center justify-between gap-x-3 px-3 md:px-6">
@@ -84,6 +113,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
               onClick={() => {
                 setShowLangMenu(!showLangMenu);
                 setShowProfileMenu(false);
+                setShowNotificationMenu(false);
               }}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
               title="Select Language"
@@ -116,11 +146,92 @@ export function TopBar({ onMenuClick }: TopBarProps) {
             )}
           </div>
 
-          {/* Notifications */}
-          <button className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-slate-100 rounded-lg transition-colors">
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 ring-2 ring-white" />
-          </button>
+          {/* Notifications Bell & Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShowNotificationMenu(!showNotificationMenu);
+                setShowProfileMenu(false);
+                setShowLangMenu(false);
+              }}
+              className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-slate-100 rounded-lg transition-colors"
+              title="Notifications"
+            >
+              <Bell className="h-4 w-4" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 min-w-[16px] h-[16px] px-1 rounded-full bg-indigo-600 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white animate-pulse">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showNotificationMenu && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowNotificationMenu(false)} />
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-border rounded-2xl shadow-xl overflow-hidden z-40 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-slate-50/50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-foreground">Notifications</span>
+                      {unreadCount > 0 && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700">
+                          {unreadCount} new
+                        </span>
+                      )}
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={() => markAllAsRead()}
+                        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto divide-y divide-border">
+                    {recentNotifications.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-muted-foreground">
+                        No notifications yet.
+                      </div>
+                    ) : (
+                      recentNotifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          onClick={() => {
+                            setShowNotificationMenu(false);
+                            navigate('/notifications');
+                          }}
+                          className={`p-3 text-left hover:bg-slate-50 cursor-pointer transition-colors ${
+                            !notif.read ? 'bg-indigo-50/30' : ''
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-xs font-bold text-foreground truncate">{notif.title}</span>
+                            {!notif.read && (
+                              <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground line-clamp-2">{notif.message}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="p-2 border-t border-border bg-slate-50 flex items-center justify-between text-xs">
+                    <button
+                      onClick={() => {
+                        setShowNotificationMenu(false);
+                        navigate('/notifications');
+                      }}
+                      className="text-indigo-600 hover:text-indigo-700 font-bold px-2 py-1 hover:underline"
+                    >
+                      View all notifications →
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Divider */}
           <div className="h-5 w-px bg-border" />
@@ -131,6 +242,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
               onClick={() => {
                 setShowProfileMenu(!showProfileMenu);
                 setShowLangMenu(false);
+                setShowNotificationMenu(false);
               }}
               className="flex items-center gap-2 hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors"
             >

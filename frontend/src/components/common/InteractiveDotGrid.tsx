@@ -219,14 +219,15 @@ export const InteractiveDotGrid: React.FC<InteractiveDotGridProps> = ({
           ctx.beginPath();
           ctx.arc(currentX, currentY, currentRadius, 0, Math.PI * 2);
 
+          const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
           if (isHovered) {
-            // Vibrant glowing indigo for hovered dots
-            ctx.fillStyle = `rgba(79, 70, 229, ${alpha})`;
-            ctx.shadowColor = 'rgba(99, 102, 241, 0.6)';
+            // Glowing spotlight
+            ctx.fillStyle = isDark ? `rgba(99, 102, 241, ${alpha})` : `rgba(79, 70, 229, ${alpha})`;
+            ctx.shadowColor = isDark ? 'rgba(56, 189, 248, 0.7)' : 'rgba(99, 102, 241, 0.6)';
             ctx.shadowBlur = 6;
           } else {
-            // Elegant refined indigo for ambient dots
-            ctx.fillStyle = `rgba(99, 102, 241, ${alpha * 0.85})`;
+            // Ambient dots
+            ctx.fillStyle = isDark ? `rgba(129, 140, 248, ${alpha * 0.4})` : `rgba(99, 102, 241, ${alpha * 0.85})`;
             ctx.shadowBlur = 0;
           }
 

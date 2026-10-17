@@ -10,6 +10,7 @@ import { OrchestrationPage } from './pages/OrchestrationPage';
 import { BacktestsPage } from './pages/BacktestsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { LandingPage } from './pages/LandingPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
@@ -20,6 +21,7 @@ import { MLPicksPage } from './pages/MLPicksPage';
 import { PaperPortfolioPage } from './pages/PaperPortfolioPage';
 import { RequireAuth, RedirectIfAuth } from './components/auth/RouteGuards';
 import { useAuthStore } from './store/authStore';
+import { useNotificationStore } from './store/notificationStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,10 +35,12 @@ const queryClient = new QueryClient({
 
 function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
+  const initNotifications = useNotificationStore((s) => s.init);
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+    initNotifications();
+  }, [checkAuth, initNotifications]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -68,6 +72,7 @@ function App() {
               <Route path="/proposals" element={<Navigate to="/dashboard" replace />} />
               <Route path="/backtests" element={<BacktestsPage />} />
               <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/settings/risk" element={<SettingsPage />} />
               <Route path="/settings/api-keys" element={<Navigate to="/settings/risk" replace />} />
               <Route path="/settings/notifications" element={<SettingsPage />} />

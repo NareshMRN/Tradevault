@@ -594,3 +594,5 @@ npm run lint
 ## License
 
 This software is developed and licensed for internal quantitative research and algorithmic trading operations. All rights reserved.
+#   T r a d e v a u l t  
+ 

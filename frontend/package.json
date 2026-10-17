@@ -13,6 +13,7 @@
     "@confluence/shared-schemas": "file:../server/packages/shared-schemas",
     "@tanstack/react-query": "^5.28.4",
     "clsx": "^2.1.0",
+    "firebase": "^12.19.0",
     "framer-motion": "^11.0.24",
     "lightweight-charts": "^4.1.3",
     "lucide-react": "^0.475.0",

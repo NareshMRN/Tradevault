@@ -22,6 +22,7 @@ import { predictionRouter } from "./routes/prediction.routes";
 import { discoveryRouter } from "./routes/discovery";
 import { paperPortfolioRouter } from "./routes/paperPortfolio";
 import { mlScreeningRouter } from "./routes/mlScreening";
+import { notificationsRouter } from "./routes/notifications";
 import morgan from "morgan";
 
 export const app = express();
@@ -77,6 +78,7 @@ app.use("/api", ordersRouter);
 app.use("/api", marketRouter);
 app.use("/api", discoveryRouter);
 app.use("/api", paperPortfolioRouter);
+app.use("/api", notificationsRouter);
 app.use("/api/prediction", predictionRouter);
 app.use("/api/ml", mlScreeningRouter);
 
