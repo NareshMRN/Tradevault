@@ -1,130 +1,122 @@
-# TradeVault — Hybrid Multi-Agent Quantitative Trading Platform
+# TradeVault — Indian Market Multi-Agent Quantitative Platform
 
-> **Production-grade, end-to-end multi-agent quantitative trading advisory, statistical forecasting, and automated execution platform.**
+> **Modern quantitative stock screening, multi-agent AI advisory, and virtual paper trading platform engineered specifically for the National Stock Exchange of India (NSE).**
 
 ---
 
-## Live Demo : https://tradevaultone.vercel.app/
-## Video Demo : https://drive.google.com/file/d/1xMjiYcjk2AKlkUHB2whCd4UQ7_v4MdNp/view
+## Live Demo & Links
+- **Live Platform**: [https://tradevaultone.vercel.app/](https://tradevaultone.vercel.app/)
+- **Repository**: [https://github.com/NareshMRN/Tradevault.git](https://github.com/NareshMRN/Tradevault.git)
+
+---
 
 ## Table of Contents
-
-- [System Architecture](#system-architecture)
-  - [High-Level Flow Diagram](#high-level-flow-diagram)
-  - [End-to-End Data Pipeline](#end-to-end-data-pipeline)
+- [Core Architecture](#core-architecture)
+- [Key Features](#key-features)
+  - [1. NSE ML Stock Screening Pipeline (LightGBM)](#1-nse-ml-stock-screening-pipeline-lightgbm)
+  - [2. Real-Time Market-Hours Awareness Engine (IST)](#2-real-time-market-hours-awareness-engine-ist)
+  - [3. NSE Sector Heatmap & Momentum Matrix](#3-nse-sector-heatmap--momentum-matrix)
+  - [4. Educational INR Paper Portfolio](#4-educational-inr-paper-portfolio)
+  - [5. Multi-Agent AI Debate & Consensus Engine](#5-multi-agent-ai-debate--consensus-engine)
+  - [6. Multi-Lingual Support (EN / KN / HI)](#6-multi-lingual-support-en--kn--hi)
+  - [7. Real-Time Push Notifications & In-App Alerts](#7-real-time-push-notifications--in-app-alerts)
 - [Monorepo Project Layout](#monorepo-project-layout)
-- [Frontend Application (`frontend/`)](#frontend-application-frontend)
-  - [Tech Stack & Tooling](#tech-stack--tooling)
-  - [Key Views & Features](#key-views--features)
-  - [State Management & Real-Time Sync](#state-management--real-time-sync)
-- [Backend API Gateway (`server/apps/api/`)](#backend-api-gateway-serverappsapi)
-  - [Core Responsibilities](#core-responsibilities)
-  - [REST API Routes Reference](#rest-api-routes-reference)
-  - [WebSocket Events](#websocket-events)
-  - [Shared Schema Validation (`@confluence/shared-schemas`)](#shared-schema-validation-confluenceshared-schemas)
-- [Python Agent Runtime Service (`server/apps/agent-runtime/`)](#python-agent-runtime-service-serverappsagent-runtime)
-  - [Microservice Architecture](#microservice-architecture)
-  - [Internal API Endpoints](#internal-api-endpoints)
-- [Specialized Multi-Model LLM Routing](#specialized-multi-model-llm-routing)
-  - [Agent Role & Model Matrix](#agent-role--model-matrix)
-  - [Multi-Agent Debate Graph Workflow](#multi-agent-debate-graph-workflow)
-- [Quantitative & Statistical Engines](#quantitative--statistical-engines)
-  - [1. Quant Factor Engine](#1-quant-factor-engine)
-  - [2. Probabilistic Quantile Forecasting](#2-probabilistic-quantile-forecasting)
-  - [3. Overfitting & Robustness Gate](#3-overfitting--robustness-gate)
-  - [4. RL-Assisted Position Sizing](#4-rl-assisted-position-sizing)
-- [Enterprise Safety Rails & Security](#enterprise-safety-rails--security)
+- [REST API Routes Reference](#rest-api-routes-reference)
 - [Environment Configuration](#environment-configuration)
 - [Quick Start & Setup Guide](#quick-start--setup-guide)
-  - [Option A: Docker Compose (Recommended)](#option-a-docker-compose-recommended)
-  - [Option B: Manual Local Development](#option-b-manual-local-development)
-  - [Running the Test Suites](#running-the-test-suites)
-- [License](#license)
+- [Test Suite & Verification](#test-suite--verification)
 
 ---
 
-## System Architecture
+## Core Architecture
 
-TradeVault unifies multi-model generative AI debate workflows with quantitative statistical rigor, algorithmic risk checks, and real-time order routing.
-
-### High-Level Flow Diagram
+TradeVault is built as a modular monorepo combining a fast TypeScript/Node.js API gateway, a specialized Python quantitative runtime, and an institutional React 19 frontend.
 
 ```
-                                ┌──────────────────────────────────────────────┐
-                                │           CONFLUENCE SYSTEM ARCHITECTURE     │
-                                └──────────────────────┬───────────────────────┘
-                                                       │
-         ┌─────────────────────────────────────────────┼─────────────────────────────────────────────┐
-         │                                             │                                             │
-         ▼                                             ▼                                             ▼
-  [ FRONTEND SPA ]                            [ API GATEWAY ]                             [ PYTHON RUNTIME ]
-  React 19 + TypeScript + Vite                Node.js + Express + Socket.IO               FastAPI Microservice (Port 8000)
-  • Real-time trading dashboard               • JWT Auth & AES-256 Key Vault              • MultiAgentDebateGraph orchestration
-  • Lightweight Charts (OHLCV)                • BullMQ job queues + Redis pub/sub         • Qlib factor mining & normalization
-  • Bull vs Bear debate transcripts           • Alpaca Broker order execution             • GluonTS probabilistic forecasting
-  • Overfitting gate metrics                  • Immutable MongoDB audit trails            • DSR/PBO overfitting validation
-  • Emergency kill switch                     • Zod schemas (@confluence/shared-schemas)  • Fractional Kelly position sizing
-         │                                             │                                             │
-         └──────────────────────┬──────────────────────┘                                             │
-                                │                                                                    │
-                                └──────────────────────────────┬─────────────────────────────────────┘
-                                                               │
-                                ┌──────────────────────────────┴──────────────────────────────┐
-                                │                                                             │
-                                ▼                                                             ▼
-                       [ EXTERNAL BROKER ]                                          [ SPECIALIZED LLMs ]
-                       Alpaca Paper / Live API                                      Groq / Gemini / Mistral / NVIDIA
-                       • Place / cancel orders                                      • DeepSeek-R1 (Groq) for Technical & Debate
-                       • Fetch positions & balances                                 • Gemini 2.0 Flash for Fundamentals & Sentiment
-                       • Real-time OHLCV market data                                • Mistral Large for News catalyst filtering
-                       • Webhook fills & order updates                              • Claude / GPT-6 for Risk & Portfolio Decisions
+                           ┌──────────────────────────────────────────────┐
+                           │          TRADEVAULT MONOREPO PLATFORM        │
+                           └──────────────────────┬───────────────────────┘
+                                                  │
+          ┌───────────────────────────────────────┼───────────────────────────────────────┐
+          │                                       │                                       │
+          ▼                                       ▼                                       ▼
+   [ FRONTEND SPA ]                        [ API GATEWAY ]                       [ PYTHON RUNTIME ]
+   React 19 + TypeScript + Vite            Node.js + Express + Socket.IO         FastAPI Microservice (Port 8000)
+   • Market status awareness banners       • JWT Auth & Google Sign-In           • LightGBM ML Classifier & Calibrator
+   • Sector Heatmap & returns matrix       • Resilient in-memory fallback        • 5-Year daily OHLCV dataset pipeline
+   • ML Screener & top 5 picks             • Virtual INR paper trading engine    • IST market-hours & holiday engine
+   • Multi-agent debate inspection         • Proxy caching for Python engines    • Multi-agent debate orchestration
+   • Multi-lingual (EN, ಕನ್ನಡ, हिन्दी)    • Firebase Cloud Messaging (FCM)      • NSE sector momentum scoring
+          │                                       │                                       │
+          └───────────────────┬───────────────────┘                                       │
+                              │                                                           │
+                              └───────────────────────────┬───────────────────────────────┘
+                                                          │
+                                         ┌────────────────┴────────────────┐
+                                         │                                 │
+                                         ▼                                 ▼
+                                [ NSE MARKET DATA ]               [ DUAL AI COMMITTEE ]
+                                Live Feed / yfinance              Gemini 2.5 + Groq DeepSeek-R1
+                                • 40 liquid Nifty 50 stocks       • Technical analysis
+                                • Official NSE holiday schedule   • Fundamental valuation
+                                • Deterministic close quotes      • Risk assessment & consensus
 ```
 
-### End-to-End Data Pipeline
+---
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Trader as User / Trader
-    participant Web as React 19 Frontend
-    participant API as Node.js API Gateway
-    participant DB as MongoDB & Redis
-    participant Runtime as Python Agent Runtime
-    participant LLM as Multi-Model LLM Matrix
-    participant Broker as Alpaca Broker
+## Key Features
 
-    Trader->>Web: Request ticker analysis (e.g. AAPL)
-    Web->>API: POST /api/analysis/run
-    API->>API: Verify JWT, permissions & Kill Switch status
-    API->>Runtime: POST /internal/analysis/run (X-Internal-Secret)
-    
-    par Quantitative Processing
-        Runtime->>Runtime: Compute momentum, volatility, RSI, MACD
-        Runtime->>Runtime: Generate P10-P90 Quantile price forecasts
-        Runtime->>Runtime: Run CSCV & Deflated Sharpe backtest check
-    and LLM Multi-Agent Debate
-        Runtime->>LLM: 4 Specialist Agents analyze data in parallel
-        Runtime->>LLM: Bull vs Bear 1-3 round interactive debate
-        Runtime->>LLM: Trader synthesizes quantitative proposal
-        Runtime->>LLM: Risk Manager evaluates limit gates & DSR check
-        Runtime->>LLM: Portfolio Manager produces final conviction & sizing
-    end
+### 1. NSE ML Stock Screening Pipeline (LightGBM)
+- **Trained Model**: Gradient-boosted decision trees (LightGBM) trained on **5 years of daily OHLCV data** across 40 liquid Nifty 50 equities downloaded via `yfinance`.
+- **Target Objective**: Scores the calibrated probability that a given stock outperforms the Nifty 50 index benchmark by at least **+0.5%** from open to close.
+- **Isotonic Calibration**: Converts raw logit margins into strictly calibrated probabilities.
+- **Chronological Time-Series Splits**: Strict separation without lookahead bias (60% Train, 20% Validation, 20% Test).
+- **Diversified Portfolio Selection**: Selects up to 5 qualified top picks with a hard diversification constraint of **maximum 2 stocks per sector**.
+- **Transparent Explainability**: Outputs the top 3 predictive feature drivers (RSI, volume breakout ratio, 5-day return momentum, volatility ratio) for every selected stock.
+- **Single-Session Historical Reviews**: Analyzes previous session performance against the Nifty 50 baseline (hit rate, excess return, individual stock open-to-close metrics).
+- **Market Closed Protection**: Automatically suspends top pick selection when the market is closed, displaying the next session opening date and time in IST.
 
-    Runtime-->>API: Analysis results, debate log & trade proposal
-    API->>DB: Persist proposal & record immutable audit log
-    API-->>Web: Real-time debate stream (WebSocket) + completed proposal
-    
-    opt Order Execution
-        Trader->>Web: Approve proposal order
-        Web->>API: POST /api/orders/execute
-        API->>API: Guard check (Kill Switch & Overfitting eligibility)
-        API->>API: Decrypt user Alpaca credentials via AES-256-GCM
-        API->>Broker: Submit paper/live bracket order
-        Broker-->>API: Order confirmation
-        API->>DB: Log transaction to audit_log
-        API-->>Web: Updated order status & real-time fill notification
-    end
-```
+### 2. Real-Time Market-Hours Awareness Engine (IST)
+- **Timezone Native**: Operates strictly on **Asia/Kolkata (IST)** time, eliminating client-side timezone discrepancies.
+- **Session States Tracked**:
+  - `OPEN`: Regular trading session (Mon–Fri, 09:15 to 15:30 IST).
+  - `PRE_OPEN`: Pre-market discovery window (Mon–Fri, 09:00 to 09:15 IST).
+  - `AFTER_CLOSE`: Post-market hours (Mon–Fri, 15:30 to 23:59 IST).
+  - `OVERNIGHT`: Overnight session prior to next market open (00:00 to 09:00 IST).
+  - `WEEKEND`: Saturday & Sunday with next Monday opening countdown.
+  - `HOLIDAY`: Matches official NSE trading holidays from `nse_holidays.json`.
+- **Price Stabilization**: Micro-ticks and live refetch intervals pause outside trading hours, freezing quotes at the last authentic session close.
+
+### 3. NSE Sector Heatmap & Momentum Matrix
+- **Sector Coverage**: Comprehensive quantitative tracking across 10 key Indian market sectors:
+  - Banking & Financials, IT & Technology, Oil & Gas / Energy, Automobiles, Pharmaceuticals, FMCG, Metals & Mining, Infrastructure, Telecom, and Defence.
+- **Multi-Horizon Momentum**: Visualizes 5-day, 20-day, and 60-day historical returns alongside relative volume multiples.
+- **Top Sector Equities**: Click any sector tile to view top-ranked equities with quantitative momentum tags.
+
+### 4. Educational INR Paper Portfolio
+- **Virtual Rupee Execution**: Paper trading denominated in **₹ INR** with an allocatable initial virtual capital (e.g., ₹25,000 to ₹10,00,000).
+- **Order Management**: Supports instant simulated market BUY and SELL executions with average fill tracking, real-time cash balance deduction, and realized PnL calculations.
+- **Zero Risk**: Eliminates live brokerage keys and financial risk while simulating institutional order routing.
+
+### 5. Multi-Agent AI Debate & Consensus Engine
+- **Committee of Specialists**:
+  - **Fundamental Analyst** (Gemini 2.5): Analyzes earnings, quarterly growth, balance sheet strength, and P/E ratios.
+  - **Technical Analyst** (Groq DeepSeek-R1): Evaluates chart patterns, candlestick structures, RSI, MACD, and volume profiles.
+  - **Sentiment Analyst**: Gauges macroeconomic catalysts and institutional flow dynamics.
+  - **Risk Manager**: Evaluates position limits, portfolio correlation, and daily stop-loss gates.
+- **Consensus & Divergence**: Identifies agreement and flags divergences between fundamental and technical perspectives.
+
+### 6. Multi-Lingual Support (EN / KN / HI)
+- **Instant Language Switching**: Full UI localization in:
+  - **English** (`EN`)
+  - **ಕನ್ನಡ** (Kannada - `KN`)
+  - **हिन्दी** (Hindi - `HI`)
+- Switchable directly from the top navigation bar without reloading.
+
+### 7. Real-Time Push Notifications & In-App Alerts
+- **Firebase Cloud Messaging (FCM)**: Push notification delivery for filled paper orders, AI debate proposals, and market status updates.
+- **In-App Toast Alerts**: Floating toast notifications with direct quick-action links.
+- **Granular Preferences**: Custom alert toggle controls persisted per user in Settings.
 
 ---
 
@@ -132,467 +124,176 @@ sequenceDiagram
 
 ```
 .
-├── README.md                      # Unified architecture & documentation (this file)
-├── .gitignore                     # Monorepo git ignore rules
+├── frontend/                         # React 19 Client SPA
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── analysis/             # AI Analysis & Debate Viewers
+│   │   │   ├── charts/               # Lightweight Charts & Recharts
+│   │   │   ├── common/               # Market status banners & metric cards
+│   │   │   └── layout/               # TopBar, Sidebar, AppShell
+│   │   ├── pages/
+│   │   │   ├── DashboardPage.tsx     # Overview dashboard with live market quotes
+│   │   │   ├── MLPicksPage.tsx       # LightGBM stock screening & session review
+│   │   │   ├── SectorHeatmapPage.tsx # NSE sector momentum & heatmap
+│   │   │   ├── TopPicksPage.tsx      # Multi-agent AI recommended stocks
+│   │   │   ├── PaperPortfolioPage.tsx# Virtual INR portfolio & order terminal
+│   │   │   ├── OrchestrationPage.tsx # Bull vs Bear multi-agent debate studio
+│   │   │   ├── WatchlistPage.tsx     # Custom monitored ticker watchlist
+│   │   │   ├── OrdersPage.tsx        # Completed virtual paper executions
+│   │   │   ├── NotificationsPage.tsx # In-app notification center
+│   │   │   ├── SettingsPage.tsx      # Risk profile constraints & alert preferences
+│   │   │   └── LandingPage.tsx       # Institutional landing page
+│   │   ├── services/                 # API service clients
+│   │   └── store/                    # Zustand stores (Auth, Language, Market Status, Notifications)
+│   └── package.json
 │
-├── frontend/                      # React 19 SPA client
-│   ├── index.html                 # HTML shell
-│   ├── vite.config.ts             # Vite build & proxy config
-│   ├── tailwind.config.ts         # Tailwind styling tokens
-│   ├── package.json               # Frontend dependencies & scripts
-│   └── src/
-│       ├── main.tsx               # Client entry point
-│       ├── App.tsx                # App shell, routing & route guards
-│       ├── index.css              # Global styles & design system
-│       ├── components/
-│       │   ├── layout/            # AppShell, TopBar, Sidebar
-│       │   ├── auth/              # RouteGuards (RequireAuth, RedirectIfAuth)
-│       │   ├── charts/            # TradingView Lightweight Charts & Portfolio Recharts
-│       │   ├── analysis/          # AI Analyst Breakdown & Debate Viewer
-│       │   ├── agents/            # Multi-agent status & performance cards
-│       │   ├── risk/              # Risk gauge, VaR & kill switch controls
-│       │   ├── news/              # News catalyst & sentiment feed
-│       │   └── common/            # Metric cards, modals, badges, loaders
-│       ├── pages/
-│       │   ├── LandingPage.tsx    # Material Design 3 white-theme landing page
-│       │   ├── AuthPage.tsx       # Login & registration
-│       │   ├── OnboardingPage.tsx # API keys & risk tolerance wizard
-│       │   ├── DashboardPage.tsx  # Mission control (Charts, Debate, Proposals)
-│       │   ├── WatchlistPage.tsx  # Monitored tickers & quant factors
-│       │   ├── ProposalsPage.tsx  # Agent proposals & execution approvals
-│       │   ├── BacktestsPage.tsx  # DSR, PBO & CSCV overfitting metrics
-│       │   ├── OrdersPage.tsx     # Order history, positions & executions
-│       │   └── SettingsPage.tsx   # Broker credentials, LLM keys & risk rules
-│       ├── services/              # API clients & mock fallback data
-│       └── store/                 # Zustand global stores (auth, trading, ui)
-│
-└── server/                        # Backend microservices & shared packages
-    ├── docker-compose.yml         # Container orchestration (Mongo, Redis, API, Runtime)
-    ├── .env.example               # Unified environment configuration template
-    ├── package.json               # Monorepo workspace orchestration
+└── server/                           # Backend Microservices
     ├── packages/
-    │   └── shared-schemas/        # Cross-stack Zod schemas & TypeScript types
-    │       └── src/index.ts       # Shared validation models (proposals, orders, quant)
+    │   └── shared-schemas/           # Zod validation contracts & TypeScript types
     └── apps/
-        ├── api/                   # Node.js + Express + Socket.IO API Gateway
-        │   ├── Dockerfile         # Production container definition
-        │   ├── vitest.config.ts   # Vitest unit & integration test configuration
+        ├── api/                      # Node.js + Express API Gateway (Port 4000)
         │   ├── src/
-        │   │   ├── server.ts      # Express server & Socket.IO initialization
-        │   │   ├── config/        # Environment parser & Redis connection
-        │   │   ├── db/            # MongoDB connection & Mongoose schemas
-        │   │   ├── middleware/    # Auth, RBAC, Rate Limiting, Kill Switch Guard
-        │   │   ├── services/      # AES-256 encryption, Alpaca broker, Audit logger
-        │   │   ├── routes/        # REST API endpoints
-        │   │   └── websocket/     # Real-time WebSocket event broadcaster
-        │   └── test/              # Vitest test suite (Auth, Alpaca, Kill Switch, etc.)
+        │   │   ├── routes/           # REST endpoints (Market, ML, Discovery, Portfolio, Auth)
+        │   │   ├── services/         # PaperTradingService, CurrentPriceService, FirebaseAdmin
+        │   │   ├── db/               # MongoDB models & inMemoryStore resilient fallback
+        │   │   └── server.ts         # Express & Socket.IO server entrypoint
+        │   └── test/                 # Vitest test suite (40 unit & integration tests)
         │
-        └── agent-runtime/         # Python 3.11 + FastAPI Quantitative ML Microservice
-            ├── Dockerfile         # Python 3.11 slim container definition
-            ├── requirements.txt   # FastAPI, NumPy, Pandas, Scipy, GluonTS dependencies
+        └── agent-runtime/            # Python 3.11 + FastAPI ML Service (Port 8000)
             ├── app/
-            │   ├── main.py        # FastAPI entrypoint & internal route handlers
-            │   ├── config.py      # LLM model mapping & internal secret settings
-            │   ├── schemas/       # Pydantic schemas for quant & agent requests
-            │   ├── llm/           # LLM router with failovers & circuit breakers
-            │   ├── agents/        # MultiAgentDebateGraph & specialized system prompts
-            │   ├── quant/         # Qlib factors & PurgedCV/CSCV overfitting validator
-            │   ├── forecasting/   # GluonTS probabilistic quantile forecast engine
-            │   └── execution/     # FinRL fractional Kelly position sizing engine
-            └── tests/             # Pytest test suite (Quant factors, LLM router)
+            │   ├── ml/               # LightGBM pipeline (train.py, predict.py, features.py)
+            │   ├── market/           # IST market status engine & holiday calendar
+            │   ├── scanner/          # Quantitative sector momentum scanner
+            │   ├── agents/           # LangChain / LangGraph multi-agent debate graph
+            │   └── main.py           # FastAPI entrypoint
+            └── scripts/
+                └── export_history.py # yfinance data extraction script
 ```
 
 ---
 
-## Frontend Application (`frontend/`)
+## REST API Routes Reference
 
-### Tech Stack & Tooling
-
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Framework** | **React 19** + **TypeScript** | Strict component-driven UI architecture |
-| **Build Tool** | **Vite 8** | Instant HMR and optimized production bundling |
-| **Styling** | **TailwindCSS 3** + **Lucide Icons** | Ultra-responsive institutional dark-mode UI |
-| **State Management** | **Zustand** | Lightweight client stores (Auth, Tickers, Active Debate) |
-| **Server State** | **TanStack React Query v5** | Automated caching, optimistic updates & polling |
-| **Charts** | **Lightweight Charts** & **Recharts** | Interactive candlestick OHLCV & portfolio equity curves |
-| **Animations** | **Framer Motion** | Micro-interactions and live debate transitions |
-| **Validation** | **Zod** + `@confluence/shared-schemas` | Zero-mismatch client-server validation contracts |
-
-### Key Views & Features
-
-- **Trading Dashboard (`DashboardPage.tsx`)**:
-  - Live TradingView-grade Candlestick charts with overlayed Quant indicators.
-  - Interactive multi-agent debate view with streaming agent messages.
-  - Real-time consensus meter (Bull vs Bear conviction score).
-  - One-click order execution card with pre-computed position sizes.
-- **Proposals & Consensus (`ProposalsPage.tsx`)**:
-  - Transparent trade proposals with detailed reasoning breakdowns.
-  - Risk Manager sign-off status and backtest qualification badges.
-- **Backtesting & Overfitting Studio (`BacktestsPage.tsx`)**:
-  - Combinatorially Symmetric Cross-Validation (CSCV) distribution graphs.
-  - Deflated Sharpe Ratio (DSR) & Probability of Backtest Overfitting (PBO).
-  - Visual Paper-Trading Eligibility flag.
-- **Risk Management & Kill Switch (`SettingsPage.tsx`)**:
-  - Global emergency kill switch with immediate visual state feedback.
-  - Max drawdown limits, max leverage, and stop-loss enforcement rules.
-  - AES-256 encrypted credential management for Alpaca and LLM providers.
-
-### State Management & Real-Time Sync
-
-```
-  WebSocket Stream (Socket.IO) ──► Zustand Store (useDebateStore) ──► React Components
-  REST API (React Query v5)     ──► Zustand Store (useAuthStore)   ──► Route Guards
-```
-
----
-
-## Backend API Gateway (`server/apps/api/`)
-
-The API Gateway is the central nervous system of TradeVault, built with **Node.js**, **Express**, and **TypeScript**.
-
-### Core Responsibilities
-
-1. **Authentication & RBAC**: JWT in secure HTTP-only cookies; fine-grained role authorization (`viewer`, `trader`, `admin`).
-2. **Credential Vault**: AES-256-GCM encryption with unique 12-byte IV and 16-byte authentication tags. Keys are decrypted exclusively in-memory when communicating with external APIs.
-3. **Execution Guardrails**:
-   - `requireKillSwitchDisengaged`: Middleware that instantly blocks any trading action if the kill switch is triggered.
-   - `requireOverfittingGateEligible`: Prevents order dispatch if the strategy fails DSR or PBO thresholds.
-4. **Broker Integration**: Native Alpaca Markets API wrapper handling account equity, portfolio positions, buying power, and paper/live order placement.
-5. **Real-time Event Streaming**: Socket.IO server emitting live LLM agent debate tokens, quant factor updates, and order fill confirmations.
-6. **Immutable Audit Logging**: Append-only MongoDB collection tracking all trades, configuration changes, and kill switch activations.
-
-### REST API Routes Reference
-
-| Method | Endpoint | Description | Guard / Middleware |
+| Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
-| `POST` | `/api/auth/register` | Register new user | Public |
-| `POST` | `/api/auth/login` | Authenticate user & issue JWT | Public |
-| `POST` | `/api/auth/logout` | Clear session cookie | Auth required |
-| `GET` | `/api/auth/me` | Fetch active user profile | Auth required |
-| `GET` | `/api/watchlist` | Get user's monitored tickers | Auth required |
-| `POST` | `/api/watchlist` | Add ticker to watchlist | Auth required |
-| `POST` | `/api/analysis/run` | Trigger multi-agent debate analysis | Auth required, Rate-limited |
-| `GET` | `/api/analysis/:id` | Fetch full analysis & debate logs | Auth required |
-| `GET` | `/api/proposals` | List generated trading proposals | Auth required |
-| `POST` | `/api/proposals/:id/approve` | Approve proposal for execution | Auth + Kill Switch Guard |
-| `POST` | `/api/orders/execute` | Place order with Alpaca | Auth + Kill Switch Guard |
-| `GET` | `/api/orders` | Fetch user order history & positions | Auth required |
-| `POST` | `/api/kill-switch/engage` | Immediately freeze all trading | Admin / Authorized Trader |
-| `POST` | `/api/kill-switch/disengage`| Re-enable trading operations | Admin / Authorized Trader |
-| `GET` | `/api/backtests` | Retrieve backtest validation metrics | Auth required |
-| `GET` | `/api/audit-log` | Query immutable security audit log | Admin required |
-| `GET` | `/health` | Gateway health check & DB status | Public |
-
-### WebSocket Events
-
-- `debate:started`: Emitted when an analysis workflow begins.
-- `debate:chunk`: Real-time streaming tokens from the active LLM agent.
-- `debate:agent_finished`: Fired when a specialist completes its perspective.
-- `debate:consensus`: Final consensus score, decision (BUY/SELL/HOLD), and sizing.
-- `order:status`: Live updates from broker fill webhooks.
-- `kill_switch:state_changed`: Broadcast instantly to all connected clients.
-
-### Shared Schema Validation (`@confluence/shared-schemas`)
-
-A dedicated TypeScript workspace package (`packages/shared-schemas`) containing shared **Zod** models:
-- Analysis request/response schemas.
-- Trade proposal definitions.
-- Broker order parameters.
-- Quant factor & forecasting payloads.
-- Both Frontend and API import from `@confluence/shared-schemas`, guaranteeing zero drift between client and server.
-
----
-
-## Python Agent Runtime Service (`server/apps/agent-runtime/`)
-
-A dedicated **Python 3.11 + FastAPI** microservice optimized for high-performance quantitative computation and LLM orchestration.
-
-### Microservice Architecture
-
-- **Asynchronous Execution**: Powered by `asyncio` for concurrent multi-model API requests.
-- **Internal Security**: All endpoints enforce `X-Internal-Secret` header validation against `AGENT_RUNTIME_INTERNAL_SECRET`.
-- **Fault-Tolerant Router**: Circuit breaker patterns with automatic failover to fallback models upon rate limits or timeouts.
-
-### Internal API Endpoints
-
-| Method | Endpoint | Handler | Description |
-|---|---|---|---|
-| `GET` | `/health` | `health()` | Returns service status and configured LLM models |
-| `POST` | `/internal/analysis/run` | `run_analysis()` | Executes full MultiAgentDebateGraph workflow |
-| `POST` | `/internal/quant/compute-factors` | `compute_factors()` | Calculates 5-factor normalized quantitative score |
-| `POST` | `/internal/forecasting/predict` | `predict_forecast()` | Generates multi-horizon probabilistic quantiles |
-| `POST` | `/internal/quant/backtest` | `run_backtest()` | Computes DSR and PBO validation |
-| `POST` | `/internal/execution/size` | `calculate_size()` | Calculates fractional Kelly sizing with volatility penalty |
-
----
-
-## Specialized Multi-Model LLM Routing
-
-TradeVault avoids generic single-model bottlenecks. Instead, it routes each sub-task to the specific LLM architecture optimized for that domain.
-
-### Agent Role & Model Matrix
-
-| Agent Role | Primary Provider | Specialized Model | Justification & Task |
-|---|---|---|---|
-| **Technical Analyst** | **Groq** | `deepseek-r1-distill-llama-70b` | Ultra-fast inference (<500ms) for high-frequency indicator evaluation & price action |
-| **Bull vs Bear Debate** | **Groq** | `deepseek-r1-distill-llama-70b` | Rapid back-and-forth interactive debate rounds to challenge assumptions |
-| **Fundamentals Analyst** | **Google Gemini** | `gemini-2.0-flash` | Massive context window to ingest 10-K, 10-Q reports, balance sheets & cash flows |
-| **Sentiment Analyst** | **Google Gemini** | `gemini-2.0-flash` | High-volume ingestion of social sentiment feeds (Twitter/X, Reddit, financial news) |
-| **Macro Analyst** | **NVIDIA NIM** | `meta/llama-3.3-70b-instruct` | Ingests macro yield curves, central bank interest rates, and inflation trends |
-| **News Analyst** | **Mistral** | `mistral-large-latest` | Exceptional multilingual reasoning for catalyst classification & noise filtering |
-| **Trader Proposal** | **Agent Router** | `deepseek-v4-flash` | Synthesizes all inputs into an actionable quantitative trade thesis |
-| **Risk Manager (Veto)** | **Agent Router** | `claude-opus-4.8` | Rigorous mathematical reasoning, risk limit enforcement, backtest gate compliance |
-| **Portfolio Manager** | **Agent Router** | `gpt-6-astra` | Final arbiter: assigns portfolio weighting, execution timing & calibrated confidence |
-| **Universal Fallback** | **OpenRouter** | `deepseek/deepseek-r1` | Auto-routes if any primary provider reaches quota or experiences high latency |
-
-### Multi-Agent Debate Graph Workflow
-
-```
-                                  ┌─────────────────────────────┐
-                                  │      INPUT MARKET DATA      │
-                                  │ (OHLCV, Financials, News)   │
-                                  └──────────────┬──────────────┘
-                                                 │
-                   ┌─────────────────────────────┼─────────────────────────────┐
-                   │                             │                             │
-                   ▼                             ▼                             ▼
-        [ Technical Analyst ]         [ Fundamentals Analyst ]        [ Macro & News Analyst ]
-           Groq DeepSeek-R1              Gemini 2.0 Flash                 Mistral / NVIDIA
-                   │                             │                             │
-                   └─────────────────────────────┼─────────────────────────────┘
-                                                 │
-                                                 ▼
-                                     ┌───────────────────────┐
-                                     │  BULL vs BEAR DEBATE  │
-                                     │  (1–3 Iterative Rds)  │
-                                     │    Groq DeepSeek-R1   │
-                                     └───────────┬───────────┘
-                                                 │
-                                                 ▼
-                                     ┌───────────────────────┐
-                                     │    TRADER PROPOSAL    │
-                                     │  Entry / SL / Targets │
-                                     └───────────┬───────────┘
-                                                 │
-                                                 ▼
-                                     ┌───────────────────────┐
-                                     │  RISK MANAGER (VETO)  │
-                                     │ Overfitting Gate & VaR│
-                                     └───────────┬───────────┘
-                                                 │
-                                       [ APPROVED or VETOED ]
-                                                 │
-                                                 ▼
-                                     ┌───────────────────────┐
-                                     │   PORTFOLIO MANAGER   │
-                                     │ Final Conviction & Lot│
-                                     └───────────────────────┘
-```
-
----
-
-## Quantitative & Statistical Engines
-
-### 1. Quant Factor Engine
-Located in `app/quant/factors.py`:
-- **Momentum Factor**: Multi-timeframe momentum across 5-day, 20-day, and 60-day returns.
-- **Volatility Factor**: Normalized realized volatility and Average True Range (ATR).
-- **Mean-Reversion Factor**: 14-period Relative Strength Index (RSI) and Bollinger %B.
-- **Value Proxy Factor**: Price deviation from the 200-day Simple Moving Average (SMA).
-- **Technical Composite**: Exponential Moving Average (EMA) cross combined with MACD histogram.
-- **Output**: Produces a normalized composite quantitative score strictly bounded in `[-1.0, 1.0]`.
-
-### 2. Probabilistic Quantile Forecasting
-Located in `app/forecasting/probabilistic.py`:
-- Replaces naive point estimates with full probability distributions.
-- Produces **P10**, **P25**, **Median (P50)**, **P75**, **P90**, and **Standard Deviation**.
-- Supports prediction horizons of **1-day**, **5-day**, and **20-day**.
-
-### 3. Overfitting & Robustness Gate
-Located in `app/quant/backtest.py`:
-- **Deflated Sharpe Ratio (DSR)**: Adjusts standard Sharpe ratio for selection bias and non-normal asset return distributions.
-- **Probability of Backtest Overfitting (PBO)**: Utilizes Combinatorially Symmetric Cross-Validation (CSCV).
-- **Hard Execution Rule**: If `is_eligible_for_paper_trading == false`, the Trader and Portfolio Manager are strictly prohibited from recommending BUY or SELL — the system forcibly overrides the signal to **HOLD**.
-
-### 4. RL-Assisted Position Sizing
-Located in `app/execution/sizing.py`:
-- Implements fractional Kelly criterion:
-  $$\text{Fraction} = c \times \left( \frac{p \cdot b - q}{b} \right) \times \left( \frac{1}{1 + \sigma_{\text{forecast}}} \right)$$
-- Constrained by Risk Manager hard limits: Maximum position size (e.g. 5% of portfolio equity) and available broker buying power.
-
----
-
-## Enterprise Safety Rails & Security
-
-1. **Zero-Trust Credential Security**:
-   - Broker API keys and LLM keys are encrypted using **AES-256-GCM** with unique per-record Initialization Vectors (IV) and authentication tags.
-   - Keys are never persisted in plaintext and are decrypted only in memory during external calls.
-2. **Global Emergency Kill Switch**:
-   - Single-click UI button or REST call `/api/kill-switch/engage`.
-   - Halts all order dispatches, cancels pending orders, and rejects new analysis approvals at the API middleware layer.
-3. **Paper-Trading Default**:
-   - The platform strictly routes to Alpaca Paper Trading by default.
-   - Live execution requires explicit activation via `.env` (`ALLOW_LIVE_TRADING=true`) plus a typed confirmation phrase in the UI that expires after 24 hours.
-4. **Tamper-Evident Audit Logging**:
-   - Pre-hook protected MongoDB collection preventing update or delete operations on audit records.
-   - Every login, key update, order creation, and kill switch trigger is immutably logged with user ID, timestamp, and IP address.
+| `GET` | `/api/market/status` | Returns current IST market state, session timers & next open date | No |
+| `GET` | `/api/ml/picks` | Returns qualified top ML picks, calibrated scores & feature drivers | No |
+| `GET` | `/api/ml/metrics` | Returns honest out-of-sample model validation metrics & limitations | No |
+| `POST`| `/api/ml/run` | Triggers a fresh ML screening run on the universe | Yes |
+| `GET` | `/api/discovery/sectors` | Returns 10 NSE sectors with momentum scores, returns & volume trend | No |
+| `GET` | `/api/discovery/picks` | Returns top-ranked stocks filtered by risk profile and sector | No |
+| `POST`| `/api/discovery/run` | Executes a complete discovery scan with debate summaries | Yes |
+| `GET` | `/api/paper-portfolio` | Returns virtual INR portfolio summary, cash balance & equity | Yes |
+| `GET` | `/api/paper-portfolio/positions` | Returns active paper stock holdings | Yes |
+| `POST`| `/api/paper-portfolio/orders` | Executes a virtual BUY or SELL paper order | Yes |
+| `POST`| `/api/paper-portfolio/reset` | Resets paper portfolio to initial virtual capital | Yes |
+| `GET` | `/api/prediction/latest/:ticker` | Returns price predictions & technical indicator levels | No |
+| `POST`| `/api/auth/register` | Registers a new trader account | No |
+| `POST`| `/api/auth/login` | Authenticates user with JWT token | No |
+| `POST`| `/api/auth/google` | Authenticates user via Firebase Google OAuth | No |
+| `GET` | `/api/auth/me` | Returns authenticated user session | Yes |
+| `GET` | `/api/notifications` | Returns user notification list | Yes |
+| `POST`| `/api/notifications/register-token` | Registers Firebase device FCM token | Yes |
 
 ---
 
 ## Environment Configuration
 
-A single environment file (`server/.env`) configures the backend infrastructure. Copy the template:
+Create a `.env` file in `server/`:
 
 ```bash
-cp server/.env.example server/.env
-```
-
-### Essential Settings Overview
-
-```ini
-# ---- App Configuration ----
-NODE_ENV=development
+# Gateway Server
 PORT=4000
+NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 
-# ---- Databases ----
-MONGODB_URI=mongodb://localhost:27017/confluence
-REDIS_URL=redis://localhost:6379
+# Authentication
+JWT_SECRET=your_jwt_secret_key_here
 
-# ---- Authentication & Security ----
-JWT_SECRET=your-64-character-jwt-secret-key-goes-here
-SESSION_COOKIE_NAME=confluence_session
-MASTER_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef # 32-byte hex
-
-# ---- LLM Provider API Keys ----
-GROQ_API_KEY=gsk_...
-GEMINI_API_KEY=AIzaSy...
-MISTRAL_API_KEY=...
-NVIDIA_API_KEY=nvapi-...
-OPENROUTER_API_KEY=sk-or-...
-AGENT_ROUTER_API_KEY=...
-
-# ---- Broker (Alpaca) ----
-ALPACA_PAPER_BASE_URL=https://paper-api.alpaca.markets
-ALPACA_LIVE_BASE_URL=https://api.alpaca.markets
-ALLOW_LIVE_TRADING=false
-
-# ---- Python Agent Runtime Service ----
+# Python Agent Runtime
 AGENT_RUNTIME_URL=http://localhost:8000
-AGENT_RUNTIME_INTERNAL_SECRET=confluence-shared-internal-secret-token-xyz987
+INTERNAL_API_SECRET=confluence-internal-secret-2026
+
+# Database (Optional - falls back seamlessly to In-Memory mode if offline)
+MONGODB_URI=mongodb://localhost:27017/tradevault
+
+# AI Model Providers
+GEMINI_API_KEY=your_gemini_api_key
+GROQ_API_KEY=your_groq_api_key
+
+# Firebase Push Notifications (Optional)
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_CLIENT_EMAIL=your_firebase_client_email
+FIREBASE_PRIVATE_KEY="your_firebase_private_key"
+```
+
+And in `frontend/.env`:
+
+```bash
+VITE_API_URL=http://localhost:4000
+VITE_SOCKET_URL=http://localhost:4000
 ```
 
 ---
 
 ## Quick Start & Setup Guide
 
-### Option A: Docker Compose (Recommended)
+### Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **Python**: v3.10 or v3.11
+- **npm** or **pnpm**
 
-Start the entire backend stack (MongoDB, Redis, API Gateway, and Python Agent Runtime) with a single command:
-
+### 1. Start the API Gateway
 ```bash
 cd server
-docker-compose up -d --build
-```
-
-Then start the frontend development server:
-
-```bash
-cd ../frontend
 npm install
 npm run dev
+# Running on http://localhost:4000
 ```
 
-Open **http://localhost:5173** to access the TradeVault platform.
-
----
-
-### Option B: Manual Local Development
-
-#### Prerequisites
-- **Node.js**: v18 or v20+
-- **Python**: 3.11+
-- **MongoDB**: Running on port `27017`
-- **Redis**: Running on port `6379`
-
-#### 1. Setup Backend API Gateway & Shared Schemas
-
-```bash
-cd server
-
-# Install monorepo dependencies
-npm install
-
-# Build shared Zod schemas
-npm run build:schemas
-
-# Start API Gateway in dev mode (runs on port 4000)
-npm run dev:api
-```
-
-#### 2. Setup Python Agent Runtime Service
-
+### 2. Start the Python Agent Runtime
 ```bash
 cd server/apps/agent-runtime
-
-# Create & activate virtual environment
-python -m venv .venv
+python -m venv venv
 # Windows:
-.venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
+.\venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
 
-# Install requirements
 pip install -r requirements.txt
-
-# Start FastAPI server with live reload (runs on port 8000)
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --reload --port 8000
+# Running on http://localhost:8000
 ```
 
-#### 3. Setup Frontend Application
-
+### 3. Start the Frontend SPA
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start Vite development server (runs on port 5173)
 npm run dev
+# Running on http://localhost:5173
 ```
 
 ---
 
-### Running the Test Suites
+## Test Suite & Verification
 
-#### Backend API Tests (Vitest)
-Tests JWT authentication, Alpaca integration, AES-256 encryption, kill switch middleware, and overfitting eligibility gates:
+TradeVault features end-to-end unit and integration test coverage:
 
+### Running Server Tests
 ```bash
-cd server/apps/api
+cd server
 npm test
 ```
+*Executes all 8 test suites (Encryption, Prediction Engine, Overfitting Gate, Discovery Scanner, Market Status, ML Screening, Authentication, and Paper Trading).*
 
-#### Python Agent Runtime Tests (Pytest)
-Tests quant factor calculation, probabilistic forecasting quantiles, and LLM router circuit breakers:
-
-```bash
-cd server/apps/agent-runtime
-pytest -v
-```
-
-#### Frontend Typecheck & Linter
+### Running Frontend Type-Check & Build
 ```bash
 cd frontend
 npm run build
-npm run lint
 ```
+*Validates all TypeScript interfaces and compiles the production bundle via Vite.*
 
 ---
 
 ## License
-
-This software is developed and licensed for internal quantitative research and algorithmic trading operations. All rights reserved.
-#   T r a d e v a u l t  
- 
+Educational and research quantitative software. Licensed under the [MIT License](LICENSE). Not SEBI-registered financial advisory. All simulated trades are strictly educational virtual INR.
