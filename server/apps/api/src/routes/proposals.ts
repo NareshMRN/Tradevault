@@ -7,6 +7,7 @@ import { validateBody } from "../middleware/validate";
 import { AlpacaService } from "../services/alpacaService";
 import { broadcastOrderStatus } from "../websocket/socketServer";
 import { logAuditEvent } from "../services/auditLogger";
+import { notifyOrderEvent } from "../services/fcmService";
 
 export const proposalsRouter = Router();
 
@@ -133,8 +134,15 @@ proposalsRouter.post(
       proposal.reviewedAt = new Date();
       await proposal.save();
 
-      // Broadcast order event over WebSocket
+      // Broadcast order event over WebSocket & push notification
       broadcastOrderStatus(req.user!.id, order);
+      await notifyOrderEvent(req.user!.id, {
+        ticker: proposal.ticker,
+        side: proposal.action,
+        qty: quantity,
+        status: brokerResult.status,
+        filledPrice: brokerResult.filledAvgPrice,
+      });
 
       // Audit log
       await logAuditEvent({

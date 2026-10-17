@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, LineChart, List, History, FileSearch, Settings, X, Network
+  LayoutDashboard, LineChart, List, History, FileSearch, Settings, X, Network, Bell
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAuthStore } from '@/store/authStore';
+import { useNotificationStore } from '@/store/notificationStore';
 import logoImg from '@/assets/logo.png';
 
 const navigation = [
@@ -14,6 +15,7 @@ const navigation = [
   { name: 'Proposals', href: '/proposals', icon: FileSearch },
   { name: 'Backtests', href: '/backtests', icon: LineChart },
   { name: 'Orders', href: '/orders', icon: History },
+  { name: 'Notifications', href: '/notifications', icon: Bell },
   { name: 'Settings', href: '/settings/risk', icon: Settings },
 ];
 
@@ -28,6 +30,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const { user } = useAuthStore();
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
 
   return (
     <>
@@ -80,7 +83,12 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                       isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'
                     )}
                   />
-                  {item.name}
+                  <span className="flex-1">{item.name}</span>
+                  {item.href === '/notifications' && unreadCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white shadow-xs">
+                      {unreadCount}
+                    </span>
+                  )}
                 </>
               )}
             </NavLink>

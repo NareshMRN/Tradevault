@@ -5,9 +5,12 @@ export interface DevUser {
   _id: any;
   id: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
   displayName: string;
   role: "user" | "admin";
+  authProvider?: "local" | "google";
+  firebaseUid?: string;
+  fcmTokens?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -77,9 +80,11 @@ class InMemoryStore {
 
   public async createUser(data: {
     email: string;
-    passwordHash: string;
+    passwordHash?: string;
     displayName: string;
     role?: "user" | "admin";
+    authProvider?: "local" | "google";
+    firebaseUid?: string;
   }): Promise<DevUser> {
     const id = new mongoose.Types.ObjectId();
     const user: DevUser = {
@@ -89,6 +94,9 @@ class InMemoryStore {
       passwordHash: data.passwordHash,
       displayName: data.displayName,
       role: data.role || "user",
+      authProvider: data.authProvider || "local",
+      firebaseUid: data.firebaseUid,
+      fcmTokens: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -273,10 +281,95 @@ class InMemoryStore {
     return item;
   }
 
+  // ==========================================
+  // Notifications & FCM
+  // ==========================================
+  private notifications: Map<string, DevNotification[]> = new Map();
+  private fcmTokens: Map<string, Set<string>> = new Map();
+
+  public addFcmToken(userId: string, token: string): void {
+    if (!token) return;
+    const tokens = this.fcmTokens.get(userId) || new Set<string>();
+    tokens.add(token);
+    this.fcmTokens.set(userId, tokens);
+  }
+
+  public getFcmTokens(userId: string): string[] {
+    const tokens = this.fcmTokens.get(userId);
+    return tokens ? Array.from(tokens) : [];
+  }
+
+  public addNotification(
+    userId: string,
+    data: {
+      type: "order" | "stock" | "risk" | "system";
+      title: string;
+      message: string;
+      symbol?: string;
+      data?: any;
+    }
+  ): DevNotification {
+    const id = new mongoose.Types.ObjectId().toString();
+    const notif: DevNotification = {
+      id,
+      _id: id,
+      userId,
+      type: data.type,
+      title: data.title,
+      message: data.message,
+      symbol: data.symbol,
+      data: data.data,
+      read: false,
+      createdAt: new Date(),
+    };
+    const list = this.notifications.get(userId) || [];
+    list.unshift(notif);
+    // Keep last 100 notifications
+    if (list.length > 100) list.pop();
+    this.notifications.set(userId, list);
+    return notif;
+  }
+
+  public getNotifications(userId: string): DevNotification[] {
+    return this.notifications.get(userId) || [];
+  }
+
+  public markNotificationRead(userId: string, id: string): boolean {
+    const list = this.getNotifications(userId);
+    const item = list.find((n) => n.id === id || n._id === id);
+    if (item) {
+      item.read = true;
+      return true;
+    }
+    return false;
+  }
+
+  public markAllNotificationsRead(userId: string): void {
+    const list = this.getNotifications(userId);
+    list.forEach((n) => (n.read = true));
+  }
+
+  public clearNotifications(userId: string): void {
+    this.notifications.set(userId, []);
+  }
+
   public getBacktestById(userId: string, id: string): DevBacktestItem | null {
     const list = this.getBacktests(userId);
     return list.find((b) => b.id === id || b._id === id) || null;
   }
+}
+
+export interface DevNotification {
+  id: string;
+  _id: string;
+  userId: string;
+  type: "order" | "stock" | "risk" | "system";
+  title: string;
+  message: string;
+  symbol?: string;
+  read: boolean;
+  data?: any;
+  createdAt: Date;
 }
 
 export interface DevWatchlistItem {

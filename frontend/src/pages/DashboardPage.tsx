@@ -510,6 +510,8 @@ export function DashboardPage() {
                 lineColor="#6366f1"
                 areaTopColor="rgba(99,102,241,0.15)"
                 areaBottomColor="rgba(99,102,241,0.0)"
+                ticker={activeTicker}
+                currencySymbol={currencySymbol}
               />
             ) : (
               <div className="h-[280px] w-full flex items-center justify-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">

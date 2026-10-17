@@ -11,6 +11,7 @@ import { ProposalsPage } from './pages/ProposalsPage';
 import { BacktestsPage } from './pages/BacktestsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { LandingPage } from './pages/LandingPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
@@ -18,6 +19,7 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { RequireAuth, RedirectIfAuth } from './components/auth/RouteGuards';
 import { useAuthStore } from './store/authStore';
 import { useKillSwitchStore } from './store/killSwitchStore';
+import { useNotificationStore } from './store/notificationStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,11 +34,13 @@ const queryClient = new QueryClient({
 function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
   const initKillSwitch = useKillSwitchStore((s) => s.init);
+  const initNotifications = useNotificationStore((s) => s.init);
 
   useEffect(() => {
     checkAuth();
     initKillSwitch();
-  }, [checkAuth, initKillSwitch]);
+    initNotifications();
+  }, [checkAuth, initKillSwitch, initNotifications]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -64,6 +68,7 @@ function App() {
               <Route path="/proposals" element={<ProposalsPage />} />
               <Route path="/backtests" element={<BacktestsPage />} />
               <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/settings/risk" element={<SettingsPage />} />
               <Route path="/settings/api-keys" element={<SettingsPage />} />
               <Route path="/settings/notifications" element={<SettingsPage />} />

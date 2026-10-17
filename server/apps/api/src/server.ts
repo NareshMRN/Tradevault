@@ -22,6 +22,7 @@ import { auditLogRouter } from "./routes/auditLog";
 import { adminRouter } from "./routes/admin";
 import { marketRouter } from "./routes/market";
 import { predictionRouter } from "./routes/prediction.routes";
+import { notificationsRouter } from "./routes/notifications";
 import morgan from "morgan";
 
 export const app = express();
@@ -78,6 +79,7 @@ app.use("/api", killSwitchRouter);
 app.use("/api", auditLogRouter);
 app.use("/api", adminRouter);
 app.use("/api", marketRouter);
+app.use("/api", notificationsRouter);
 app.use("/api/prediction", predictionRouter);
 
 // Global Error Handler

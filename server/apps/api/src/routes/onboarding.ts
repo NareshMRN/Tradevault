@@ -57,7 +57,7 @@ onboardingRouter.post(
         if (isDbReady) {
           const existing = await User.findOne({ email: data.email.toLowerCase() });
           if (existing) {
-            const isMatch = await bcrypt.compare(data.password, existing.passwordHash);
+            const isMatch = await bcrypt.compare(data.password, existing.passwordHash || "");
             if (!isMatch) {
               res.status(409).json({ error: "User already exists with this email address." });
               return;
@@ -75,7 +75,7 @@ onboardingRouter.post(
         } else {
           const existing = await inMemoryStore.findUserByEmail(data.email);
           if (existing) {
-            const isMatch = await bcrypt.compare(data.password, existing.passwordHash);
+            const isMatch = await bcrypt.compare(data.password, existing.passwordHash || "");
             if (!isMatch) {
               res.status(409).json({ error: "User already exists with this email address." });
               return;

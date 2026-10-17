@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import { Key, ShieldAlert, Bell, Eye, EyeOff, Check, Loader2, CheckCircle2 } from 'lucide-react';
 import { onboardingService, type RiskProfile } from '@/services/onboardingService';
 import { settingsService, type CredentialSummary } from '@/services/settingsService';
@@ -118,10 +119,33 @@ function MaskedKeyRow({
   );
 }
 
+// Default notification preferences
+const DEFAULT_NOTIFICATIONS = [
+  { key: 'trade_proposal', label: 'New AI trade proposal awaiting review', enabled: true },
+  { key: 'risk_veto', label: 'Risk Manager veto alert triggered', enabled: true },
+  { key: 'kill_switch', label: 'Kill switch engaged or disengaged', enabled: true },
+  { key: 'order_fill', label: 'Order execution & fill notification', enabled: true },
+  { key: 'daily_summary', label: 'Daily portfolio factor attribution summary', enabled: false },
+  { key: 'watchlist_alert', label: 'Watchlist price movement alerts (±5%)', enabled: false },
+  { key: 'backtest_complete', label: 'Backtest completed notification', enabled: true },
+];
+
+function getTabFromPath(pathname: string): 'risk' | 'keys' | 'notifications' {
+  if (pathname.includes('notifications')) return 'notifications';
+  if (pathname.includes('api-keys')) return 'keys';
+  return 'risk';
+}
+
 export function SettingsPage() {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'risk' | 'keys' | 'notifications'>('risk');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState<'risk' | 'keys' | 'notifications'>(() => getTabFromPath(location.pathname));
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Sync tab with URL when navigating
+  useEffect(() => {
+    setActiveTab(getTabFromPath(location.pathname));
+  }, [location.pathname]);
 
   const { isEngaged, toggle: toggleKillSwitch, isLoading: killSwitchLoading } = useKillSwitchStore();
 
@@ -180,6 +204,33 @@ export function SettingsPage() {
 
   const getSavedMask = (providerName: string) => {
     return credentials.find((c) => c.provider.toLowerCase() === providerName.toLowerCase())?.maskedKey;
+  };
+
+  // Notification preferences state — persisted in localStorage
+  const [notifEmail, setNotifEmail] = useState(() => {
+    try { return localStorage.getItem('tradevault_notif_email') || ''; } catch { return ''; }
+  });
+  const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('tradevault_notif_prefs');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    const defaults: Record<string, boolean> = {};
+    DEFAULT_NOTIFICATIONS.forEach((n) => { defaults[n.key] = n.enabled; });
+    return defaults;
+  });
+
+  const handleToggleNotif = (key: string) => {
+    setNotifPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSaveNotifications = () => {
+    try {
+      localStorage.setItem('tradevault_notif_email', notifEmail);
+      localStorage.setItem('tradevault_notif_prefs', JSON.stringify(notifPrefs));
+    } catch {}
+    setFeedback('Notification preferences saved successfully.');
+    setTimeout(() => setFeedback(null), 3000);
   };
 
   return (
@@ -340,38 +391,55 @@ export function SettingsPage() {
           <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
             <Bell className="h-5 w-5 text-indigo-600" /> Notifications & Alerts
           </h2>
+
+          {/* Notification Email */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Notification Email</label>
             <input
               type="email"
-              placeholder="trader@confluence.ai"
+              value={notifEmail}
+              onChange={(e) => setNotifEmail(e.target.value)}
+              placeholder="trader@tradevault.ai"
               className="w-full bg-white border border-border rounded-lg px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
+            <p className="text-xs text-muted-foreground mt-1.5">
+              Email address for receiving trade alerts, risk warnings, and daily summaries.
+            </p>
           </div>
-          <div className="space-y-3">
-            {[
-              { label: 'New AI trade proposal awaiting review', enabled: true },
-              { label: 'Risk Manager veto alert triggered', enabled: true },
-              { label: 'Kill switch engaged or disengaged', enabled: true },
-              { label: 'Order execution & fill notification', enabled: true },
-              { label: 'Daily portfolio factor attribution summary', enabled: false },
-            ].map((n) => (
-              <div key={n.label} className="flex items-center justify-between py-3 border-b border-border last:border-0">
-                <p className="text-sm text-slate-700">{n.label}</p>
-                <div className={`w-10 h-6 rounded-full relative cursor-pointer transition-colors ${n.enabled ? 'bg-indigo-600' : 'bg-slate-200'}`}>
-                  <div className={`absolute top-1 h-4 w-4 bg-white rounded-full shadow transition-transform ${n.enabled ? 'translate-x-5' : 'translate-x-1'}`} />
+
+          {/* Toggle Switches */}
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Alert Preferences</h3>
+            {DEFAULT_NOTIFICATIONS.map((n) => {
+              const isOn = notifPrefs[n.key] ?? n.enabled;
+              return (
+                <div key={n.key} className="flex items-center justify-between py-3 border-b border-border last:border-0">
+                  <p className="text-sm text-slate-700">{n.label}</p>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isOn}
+                    onClick={() => handleToggleNotif(n.key)}
+                    className={`w-11 h-6 rounded-full relative transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isOn ? 'bg-indigo-600' : 'bg-slate-200'}`}
+                  >
+                    <div className={`absolute top-1 h-4 w-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${isOn ? 'translate-x-[22px]' : 'translate-x-1'}`} />
+                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
+          {/* Notification frequency hint */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+            <strong>Note:</strong> Email notifications are sent in real-time for critical alerts (kill switch, risk veto) and batched daily for summaries. Push notifications require browser permission.
+          </div>
+
           <button
             type="button"
-            onClick={() => {
-              setFeedback('Notification preferences saved.');
-              setTimeout(() => setFeedback(null), 3000);
-            }}
-            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm"
+            onClick={handleSaveNotifications}
+            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm flex items-center gap-2"
           >
+            <CheckCircle2 className="h-4 w-4" />
             Save Preferences
           </button>
         </div>
