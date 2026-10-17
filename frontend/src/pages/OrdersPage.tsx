@@ -39,7 +39,6 @@ export function OrdersPage() {
   });
 
   const filledCount = orders.filter((o) => o.status.toLowerCase() === 'filled').length;
-  const isPaperMode = orders.length === 0 || orders.some((o) => o.isPaper);
 
   return (
     <div className="space-y-6 max-w-[1200px] mx-auto">
@@ -47,12 +46,12 @@ export function OrdersPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Order History</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Real-time execution log synced with Alpaca {isPaperMode ? 'Paper' : 'Live'} broker
+            Real-time virtual execution log for NSE Indian Equities
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full text-xs font-semibold text-emerald-700">
           <ShieldCheck className="h-4 w-4 text-emerald-600" />
-          {isPaperMode ? 'Paper Trading Mode Active' : 'Live Broker Mode'}
+          Virtual Paper Trading Mode Active
         </div>
       </div>
 
@@ -61,8 +60,8 @@ export function OrdersPage() {
         {[
           { label: 'Total Orders', value: orders.length.toString(), sub: 'Executed or Routed' },
           { label: 'Filled Orders', value: filledCount.toString(), sub: 'Confirmed Filled' },
-          { label: 'Simulated P&L', value: '+$1,240.50', sub: 'Calculated Mark' },
-          { label: 'Broker Status', value: 'Connected', sub: 'Alpaca REST & WS' },
+          { label: 'Simulated P&L', value: '+₹12,450.00', sub: 'Calculated Mark' },
+          { label: 'Paper Engine Status', value: 'Active', sub: 'Instant In-Memory Match' },
         ].map((s) => (
           <div key={s.label} className="bg-white border border-border rounded-xl p-4 shadow-sm">
             <p className="text-xs text-muted-foreground">{s.label}</p>
@@ -95,13 +94,13 @@ export function OrdersPage() {
         {isLoading ? (
           <div className="py-16 flex flex-col items-center justify-center gap-3">
             <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
-            <p className="text-sm text-muted-foreground">Loading broker orders from MongoDB...</p>
+            <p className="text-sm text-muted-foreground">Loading paper orders...</p>
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="py-16 text-center">
             <Clock className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
             <p className="text-base font-semibold text-foreground">No orders found.</p>
-            <p className="text-sm text-muted-foreground mt-1">Approve a proposal from the Trade Proposals page to place simulated orders.</p>
+            <p className="text-sm text-muted-foreground mt-1">Place a virtual paper trade order in Top Picks or Paper Portfolio.</p>
           </div>
         ) : (
           <div className="overflow-x-auto custom-scrollbar">
@@ -130,7 +129,7 @@ export function OrdersPage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-foreground font-mono">{o.qty}</td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-foreground">${(o.price ?? 150.0).toFixed(2)}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right font-mono text-foreground">₹{(o.price ?? 1500.0).toFixed(2)}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-center text-muted-foreground capitalize hidden sm:table-cell">{o.type}</td>
                     <td className="whitespace-nowrap px-3 py-4">
                       <div className="flex items-center justify-center gap-1.5">

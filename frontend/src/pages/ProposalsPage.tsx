@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, XCircle, Clock, TrendingUp, TrendingDown, BrainCircuit, ChevronDown, ChevronUp, AlertOctagon, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, TrendingUp, TrendingDown, BrainCircuit, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { proposalService, type TradeProposalItem } from '@/services/proposalService';
 
 export function ProposalsPage() {
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [killSwitchAlert, setKillSwitchAlert] = useState<string | null>(null);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
   const { data: proposals = [], isLoading } = useQuery<TradeProposalItem[]>({
@@ -17,18 +16,13 @@ export function ProposalsPage() {
   const approveMutation = useMutation({
     mutationFn: (id: string) => proposalService.approveProposal(id),
     onSuccess: (data) => {
-      setKillSwitchAlert(null);
-      setSuccessBanner(data.message || 'Proposal approved and order routed to broker!');
+      setSuccessBanner(data.message || 'Proposal approved and virtual order placed!');
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       setTimeout(() => setSuccessBanner(null), 5000);
     },
     onError: (err: any) => {
-      if (err?.status === 403 || err?.message?.toLowerCase().includes('kill switch')) {
-        setKillSwitchAlert('Trading is HALTED: Kill switch is currently engaged. You must disengage the Kill Switch in the top bar before approving new orders.');
-      } else {
-        alert(`Approval error: ${err?.message || 'Failed to approve proposal'}`);
-      }
+      alert(`Approval error: ${err?.message || 'Failed to approve proposal'}`);
     },
   });
 
@@ -52,16 +46,6 @@ export function ProposalsPage() {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Trade Proposals</h1>
         <p className="text-sm text-muted-foreground mt-1">Multi-agent committee recommendations awaiting your approval</p>
       </div>
-
-      {killSwitchAlert && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center gap-3 shadow-sm">
-          <AlertOctagon className="h-6 w-6 text-red-600 shrink-0" />
-          <div className="flex-1">
-            <h4 className="text-sm font-bold">Execution Blocked by Kill Switch</h4>
-            <p className="text-xs mt-0.5">{killSwitchAlert}</p>
-          </div>
-        </div>
-      )}
 
       {successBanner && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-3 shadow-sm">
@@ -129,7 +113,7 @@ export function ProposalsPage() {
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-0.5">
-                        {p.suggestedQty || p.suggestedQuantity || 10} shares @ ${(p.price || 150.0).toFixed(2)} • Size: {p.suggestedSizePct || 5}%
+                        {p.suggestedQty || p.suggestedQuantity || 10} shares @ ₹{(p.price || 1500.0).toFixed(2)} • Size: {p.suggestedSizePct || 5}%
                       </p>
                     </div>
                   </div>
@@ -194,7 +178,7 @@ export function ProposalsPage() {
                           className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors shadow-md shadow-emerald-500/20 text-sm"
                         >
                           {approveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                          Approve Proposal (Submit Order)
+                          Approve Proposal (Execute Virtual Paper Order)
                         </button>
                         <button
                           onClick={() => rejectMutation.mutate(p.id)}

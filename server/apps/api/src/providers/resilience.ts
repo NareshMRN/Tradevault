@@ -32,7 +32,7 @@ export class ProviderResilience {
   public static async fetchWithTimeout(
     url: string,
     options: RequestInit,
-    timeoutMs: number = 18000
+    timeoutMs: number = 7000
   ): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);

@@ -27,11 +27,6 @@ export const env = {
   MONGODB_URI:
     process.env.MONGODB_URI || "mongodb://localhost:27017/confluence",
 
-  // Redis / Upstash
-  REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
-  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || "",
-  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || "",
-
   // Auth & Cryptography
   JWT_SECRET:
     process.env.JWT_SECRET ||
@@ -41,20 +36,14 @@ export const env = {
     process.env.MASTER_ENCRYPTION_KEY ||
     "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
 
-  // LLM Providers (System Fallbacks)
+  // LLM Providers
   GROQ_API_KEY: process.env.GROQ_API_KEY || "",
+  GROQ_BASE_URL: process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
+  GROQ_MODEL: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
-  MISTRAL_API_KEY: process.env.MISTRAL_API_KEY || "",
-  NVIDIA_API_KEY: process.env.NVIDIA_API_KEY || "",
+  GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-2.0-flash",
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
   AGENT_ROUTER_API_KEY: process.env.AGENT_ROUTER_API_KEY || "",
-
-  // Broker
-  ALPACA_PAPER_BASE_URL:
-    process.env.ALPACA_PAPER_BASE_URL || "https://paper-api.alpaca.markets",
-  ALPACA_LIVE_BASE_URL:
-    process.env.ALPACA_LIVE_BASE_URL || "https://api.alpaca.markets",
-  ALLOW_LIVE_TRADING: process.env.ALLOW_LIVE_TRADING === "true",
 
   // Groww Trading API
   GROWW_API_KEY: process.env.GROWW_API_KEY || "",

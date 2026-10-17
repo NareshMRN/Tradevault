@@ -13,7 +13,7 @@ class AnalystOutput(BaseModel):
         "macro_analyst",
     ]
     summary: str = Field(..., max_length=1000)
-    key_evidence: List[str] = Field(..., min_items=1, max_items=5)
+    key_evidence: List[str] = Field(..., min_length=1, max_length=5)
     stance: Literal["bullish", "bearish", "neutral"]
     confidence: float = Field(..., ge=0.0, le=1.0)
 
@@ -59,6 +59,16 @@ class PortfolioManagerOutput(BaseModel):
     forecast_dispersion_note: str = Field(..., max_length=400)
 
 # ==========================================
+# 6. Multilingual Synthesis Schema
+# ==========================================
+class MultilingualSynthesisOutput(BaseModel):
+    language: Literal["en", "kn", "hi"] = "en"
+    headline: str = Field(..., max_length=300)
+    synthesis: str = Field(..., max_length=1500)
+    key_points: List[str] = Field(default_factory=list, max_length=5)
+    action_label: str = Field(..., max_length=100)
+
+# ==========================================
 # API Request / Response Payloads
 # ==========================================
 class AnalysisRunRequest(BaseModel):
@@ -69,6 +79,7 @@ class AnalysisRunRequest(BaseModel):
     minConfidence: float = 0.65
     debateRounds: int = 1
     requireUnanimousConvergence: bool = False
+    language: Literal["en", "kn", "hi"] = "en"
     userApiKeys: Optional[Dict[str, str]] = None
 
 class FactorComputeRequest(BaseModel):

@@ -29,6 +29,15 @@ class QuantFactorEngine:
             or clean_upper in ["RELIANCE", "TCS", "INFY", "HDFCBANK", "ICICIBANK", "SBIN", "BHARTIARTL", "ITC"]
         )
 
+        # 1. Fetch via unified MarketDataRouter (Angel One -> Groww -> Cache -> Sample)
+        try:
+            from app.data.router import market_router
+            df = await market_router.get_history(clean_upper, days=days)
+            if df is not None and not df.empty and len(df) >= 10:
+                return df
+        except Exception as e:
+            print(f"[QuantFactorEngine] market_router note for {ticker}: {e}")
+
         if is_indian:
             try:
                 groww_df = groww_client.get_candles(clean_upper, days=days)
@@ -148,7 +157,7 @@ class QuantFactorEngine:
         }
 
         try:
-            client = AsyncIOMotorClient(settings.MONGODB_URI)
+            client = AsyncIOMotorClient(settings.MONGODB_URI, serverSelectionTimeoutMS=500)
             db = client.get_default_database()
             await db.factor_scores.update_one(
                 {"ticker": ticker.upper(), "asOfDate": as_of_date},

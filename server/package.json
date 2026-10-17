@@ -7,6 +7,8 @@
     "apps/*"
   ],
   "scripts": {
+    "dev": "npm run dev:api",
+    "predev:api": "npm run build:schemas",
     "build:schemas": "npm run build --workspace=@confluence/shared-schemas",
     "build:api": "npm run build --workspace=@confluence/api",
     "build": "npm run build:schemas && npm run build:api",

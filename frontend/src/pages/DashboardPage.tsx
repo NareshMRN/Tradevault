@@ -10,8 +10,7 @@ import {
   Search,
   Loader2,
   Star,
-  Layers,
-  CheckCircle2
+  Layers
 } from 'lucide-react';
 import { MetricCard } from '@/components/common/MetricCard';
 import { StockChart } from '@/components/charts/StockChart';
@@ -23,12 +22,17 @@ import { onboardingService } from '@/services/onboardingService';
 import { orderService } from '@/services/orderService';
 import { watchlistService, type WatchlistEnrichedItem } from '@/services/watchlistService';
 import { marketService, type StockQuote, type PredictionResult, type SearchResultItem } from '@/services/marketService';
+import { useMarketStatusStore } from '@/store/marketStatusStore';
+import { formatINR } from '@/utils/formatters';
 
 const TIMEFRAMES = ['1D', '1W', '1M', '3M', '1Y'] as const;
 type Timeframe = typeof TIMEFRAMES[number];
 
 export function DashboardPage() {
   const queryClient = useQueryClient();
+  const { status: marketStatus } = useMarketStatusStore();
+  const isOpen = marketStatus?.is_open ?? false;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTicker, setActiveTicker] = useState<string>(() => {
     return localStorage.getItem('confluence_active_ticker') || 'RELIANCE';
@@ -59,11 +63,12 @@ export function DashboardPage() {
     queryFn: () => orderService.getOrders(),
   });
 
-  // User Watchlist Query
+  // User Watchlist Query - refetches ONLY when market is OPEN
   const { data: watchlistItems = [] } = useQuery<WatchlistEnrichedItem[]>({
     queryKey: ['watchlist'],
     queryFn: watchlistService.getWatchlist,
-    refetchInterval: 5000,
+    staleTime: isOpen ? 5000 : Infinity,
+    refetchInterval: isOpen && typeof document !== 'undefined' && document.visibilityState === 'visible' ? 5000 : false,
   });
 
   // Watchlist Mutation: Add / Remove
@@ -82,11 +87,12 @@ export function DashboardPage() {
     },
   });
 
-  // Live Quote Query with continuous 3s polling
+  // Live Quote Query: refetches every 3s ONLY when market is OPEN
   const { data: quote, isLoading: isQuoteLoading } = useQuery<StockQuote>({
     queryKey: ['market-quote', activeTicker, activeTimeframe],
     queryFn: () => marketService.getQuote(activeTicker, activeTimeframe),
-    refetchInterval: 3000,
+    staleTime: isOpen ? 3000 : Infinity,
+    refetchInterval: isOpen && typeof document !== 'undefined' && document.visibilityState === 'visible' ? 3000 : false,
   });
 
   // Sync latest quote price to live price state
@@ -96,9 +102,11 @@ export function DashboardPage() {
     }
   }, [quote?.price]);
 
-  // Micro-tick engine: provides continuous realistic live tick stream
+  // Micro-tick engine: provides continuous live ticks ONLY when market is OPEN
   useEffect(() => {
-    if (!livePrice) return;
+    // When market is closed, freeze live ticks and show exact last close price
+    if (!isOpen || !livePrice) return;
+
     const interval = setInterval(() => {
       const deltaRatio = (Math.random() - 0.49) * 0.0006;
       const newPrice = Number((livePrice * (1 + deltaRatio)).toFixed(2));
@@ -111,7 +119,7 @@ export function DashboardPage() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [livePrice]);
+  }, [isOpen, livePrice]);
 
   // Debounced search autocomplete
   useEffect(() => {
@@ -164,7 +172,8 @@ export function DashboardPage() {
   const { data: indicesData } = useQuery({
     queryKey: ['market-indices'],
     queryFn: marketService.getIndices,
-    refetchInterval: 15000,
+    staleTime: isOpen ? 15000 : Infinity,
+    refetchInterval: isOpen && typeof document !== 'undefined' && document.visibilityState === 'visible' ? 15000 : false,
   });
 
   const handleRefresh = async () => {
@@ -181,8 +190,7 @@ export function DashboardPage() {
     setSearchStatus(`Fetching real-time market data for ${ticker}...`);
     try {
       await watchlistService.runAnalysis(ticker);
-      setSearchStatus(`Loaded live quote for ${ticker}. Multi-agent debate proposal generated.`);
-      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      setSearchStatus(`Loaded live quote for ${ticker}. Analysis complete.`);
     } catch {
       setSearchStatus(`Loaded live quote for ${ticker}.`);
     }
@@ -252,8 +260,8 @@ export function DashboardPage() {
       {indicesData?.indices && indicesData.indices.length > 0 && (
         <div className="flex flex-wrap items-center gap-3 p-2.5 bg-white border border-border rounded-xl shadow-sm">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mr-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            LIVE BENCHMARKS:
+            <span className={`h-2 w-2 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+            {isOpen ? 'LIVE BENCHMARKS:' : 'BENCHMARKS (LAST CLOSE):'}
           </div>
           {indicesData.indices.map((idx) => {
             const isIdxPos = idx.change >= 0;
@@ -300,8 +308,10 @@ export function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Intelligence Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Market Open • Real-time Multi-Agent Quantitative Analysis • Continuous Live Feeds
+            <span className={`h-2 w-2 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+            {isOpen
+              ? 'Market Open • Real-time Multi-Agent Quantitative Analysis • Continuous Live Feeds'
+              : 'Market Closed • Showing Last Session Close Quotes • Live Feeds Paused'}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -405,21 +415,21 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Total Portfolio Capital"
-          value={`$${totalValue.toLocaleString()}`}
+          value={formatINR(totalValue)}
           icon={DollarSign}
           trend={`Risk Category: ${riskLevel}`}
           trendUp={true}
         />
         <MetricCard
           label="Realized Day P&L"
-          value={`${realizedPnL >= 0 ? '+' : '-'}$${Math.abs(realizedPnL).toFixed(2)}`}
+          value={formatINR(realizedPnL, { showSign: true })}
           icon={TrendingUp}
           trend={`${dayPnLPct.toFixed(2)}% (${activeCount} Positions)`}
           trendUp={realizedPnL >= 0}
         />
         <MetricCard
           label="Available Capital"
-          value={`$${availableCapital.toLocaleString()}`}
+          value={formatINR(availableCapital)}
           icon={PieChart}
           trend={`${activeCount} Active Positions`}
         />
@@ -427,7 +437,7 @@ export function DashboardPage() {
           label="Risk Gate Limits"
           value={riskLevel}
           icon={Activity}
-          trend={riskProfile?.liveTradingEnabled ? 'Live Trading Active' : 'Simulated Paper Mode'}
+          trend="Virtual Paper Mode Active"
         />
       </div>
 
@@ -446,9 +456,13 @@ export function DashboardPage() {
                   <span className="text-xs uppercase font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">
                     {quote?.ticker || activeTicker}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    LIVE TICK
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold border ${
+                    isOpen
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                    {isOpen ? 'LIVE TICK' : 'LAST CLOSE (MARKET CLOSED)'}
                   </span>
                   {/* Dynamic Add to Watchlist Button */}
                   <button
@@ -549,9 +563,9 @@ export function DashboardPage() {
             </div>
           </div>
 
-          <DebatePanel prediction={predictionData} />
+          <DebatePanel prediction={predictionData} ticker={activeTicker} isLoading={isPredictionLoading} />
 
-          <AIAnalysis prediction={predictionData} isLoading={isPredictionLoading} />
+          <AIAnalysis prediction={predictionData} ticker={activeTicker} isLoading={isPredictionLoading} />
 
         </div>
 
@@ -626,10 +640,6 @@ export function DashboardPage() {
             <h3 className="text-base font-semibold text-foreground">Active Broker Orders & Positions</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Live execution telemetry synchronized with broker rails</p>
           </div>
-          <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-            <CheckCircle2 className="h-3 w-3" />
-            Alpaca / Groww Connected
-          </span>
         </div>
 
         {orders.length === 0 ? (
@@ -639,7 +649,7 @@ export function DashboardPage() {
             </div>
             <p className="text-sm font-bold text-foreground">No Active Broker Positions</p>
             <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
-              You currently have 0 open broker execution orders. Select any stock or industry above and run an AI Committee Analysis to generate, review, and approve trade execution proposals.
+              You currently have 0 open broker execution orders. Select any stock or sector above to review analysis or place virtual paper orders.
             </p>
           </div>
         ) : (
@@ -667,7 +677,7 @@ export function DashboardPage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-muted-foreground font-mono">{pos.qty || pos.quantity || 1}</td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-muted-foreground font-mono">${(pos.price || pos.filledAvgPrice || 0).toFixed(2)}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-muted-foreground font-mono">{formatINR(pos.price || pos.filledAvgPrice || 0)}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-center">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold uppercase ${
                         pos.status === 'filled' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'

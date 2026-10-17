@@ -1,0 +1,442 @@
+[
+  {
+    "symbol": "RELIANCE",
+    "name": "Reliance Industries Ltd",
+    "sector": "Energy & Petrochemicals",
+    "market_cap_category": "Large Cap",
+    "base_price": 2980.0,
+    "token": "2885"
+  },
+  {
+    "symbol": "TCS",
+    "name": "Tata Consultancy Services Ltd",
+    "sector": "Information Technology",
+    "market_cap_category": "Large Cap",
+    "base_price": 4120.0,
+    "token": "11536"
+  },
+  {
+    "symbol": "HDFCBANK",
+    "name": "HDFC Bank Ltd",
+    "sector": "Banking & Financial Services",
+    "market_cap_category": "Large Cap",
+    "base_price": 1680.0,
+    "token": "1333"
+  },
+  {
+    "symbol": "ICICIBANK",
+    "name": "ICICI Bank Ltd",
+    "sector": "Banking & Financial Services",
+    "market_cap_category": "Large Cap",
+    "base_price": 1240.0,
+    "token": "4963"
+  },
+  {
+    "symbol": "BHARTIARTL",
+    "name": "Bharti Airtel Ltd",
+    "sector": "Telecommunications",
+    "market_cap_category": "Large Cap",
+    "base_price": 1640.0,
+    "token": "10604"
+  },
+  {
+    "symbol": "INFY",
+    "name": "Infosys Ltd",
+    "sector": "Information Technology",
+    "market_cap_category": "Large Cap",
+    "base_price": 1910.0,
+    "token": "1594"
+  },
+  {
+    "symbol": "SBIN",
+    "name": "State Bank of India",
+    "sector": "Banking & Financial Services",
+    "market_cap_category": "Large Cap",
+    "base_price": 820.0,
+    "token": "3045"
+  },
+  {
+    "symbol": "LICI",
+    "name": "Life Insurance Corp of India",
+    "sector": "Banking & Financial Services",
+    "market_cap_category": "Large Cap",
+    "base_price": 960.0,
+    "token": "11654"
+  },
+  {
+    "symbol": "ITC",
+    "name": "ITC Ltd",
+    "sector": "Consumer Goods & FMCG",
+    "market_cap_category": "Large Cap",
+    "base_price": 485.0,
+    "token": "1660"
+  },
+  {
+    "symbol": "HINDUNILVR",
+    "name": "Hindustan Unilever Ltd",
+    "sector": "Consumer Goods & FMCG",
+    "market_cap_category": "Large Cap",
+    "base_price": 2720.0,
+    "token": "1394"
+  },
+  {
+    "symbol": "LT",
+    "name": "Larsen & Toubro Ltd",
+    "sector": "Infrastructure & Capital Goods",
+    "market_cap_category": "Large Cap",
+    "base_price": 3650.0,
+    "token": "11483"
+  },
+  {
+    "symbol": "BAJFINANCE",
+    "name": "Bajaj Finance Ltd",
+    "sector": "Banking & Financial Services",
+    "market_cap_category": "Large Cap",
+    "base_price": 7250.0,
+    "token": "317"
+  },
+  {
+    "symbol": "HCLTECH",
+    "name": "HCL Technologies Ltd",
+    "sector": "Information Technology",
+    "market_cap_category": "Large Cap",
+    "base_price": 1820.0,
+    "token": "7229"
+  },
+  {
+    "symbol": "MARUTI",
+    "name": "Maruti Suzuki India Ltd",
+    "sector": "Automobiles",
+    "market_cap_category": "Large Cap",
+    "base_price": 12800.0,
+    "token": "10999"
+  },
+  {
+    "symbol": "SUNPHARMA",
+    "name": "Sun Pharmaceutical Industries Ltd",
+    "sector": "Pharmaceuticals & Healthcare",
+    "market_cap_category": "Large Cap",
+    "base_price": 1890.0,
+    "token": "3351"
+  },
+  {
+    "symbol": "TATAMOTORS",
+    "name": "Tata Motors Ltd",
+    "sector": "Automobiles",
+    "market_cap_category": "Large Cap",
+    "base_price": 920.0,
+    "token": "3456"
+  },
+  {
+    "symbol": "KOTAKBANK",
+    "name": "Kotak Mahindra Bank Ltd",
+    "sector": "Banking & Financial Services",
+    "market_cap_category": "Large Cap",
+    "base_price": 1790.0,
+    "token": "1922"
+  },
+  {
+    "symbol": "AXISBANK",
+    "name": "Axis Bank Ltd",
+    "sector": "Banking & Financial Services",
+    "market_cap_category": "Large Cap",
+    "base_price": 1180.0,
+    "token": "5900"
+  },
+  {
+    "symbol": "NTPC",
+    "name": "NTPC Ltd",
+    "sector": "Energy & Petrochemicals",
+    "market_cap_category": "Large Cap",
+    "base_price": 415.0,
+    "token": "11630"
+  },
+  {
+    "symbol": "ONGC",
+    "name": "Oil & Natural Gas Corp Ltd",
+    "sector": "Energy & Petrochemicals",
+    "market_cap_category": "Large Cap",
+    "base_price": 290.0,
+    "token": "2475"
+  },
+  {
+    "symbol": "TITAN",
+    "name": "Titan Company Ltd",
+    "sector": "Consumer Goods & FMCG",
+    "market_cap_category": "Large Cap",
+    "base_price": 3480.0,
+    "token": "3506"
+  },
+  {
+    "symbol": "ADANIENT",
+    "name": "Adani Enterprises Ltd",
+    "sector": "Infrastructure & Capital Goods",
+    "market_cap_category": "Large Cap",
+    "base_price": 3120.0,
+    "token": "25"
+  },
+  {
+    "symbol": "ADANIPORTS",
+    "name": "Adani Ports and SEZ Ltd",
+    "sector": "Infrastructure & Capital Goods",
+    "market_cap_category": "Large Cap",
+    "base_price": 1420.0,
+    "token": "15083"
+  },
+  {
+    "symbol": "COALINDIA",
+    "name": "Coal India Ltd",
+    "sector": "Metals & Mining",
+    "market_cap_category": "Large Cap",
+    "base_price": 490.0,
+    "token": "20374"
+  },
+  {
+    "symbol": "BAJAJFINSV",
+    "name": "Bajaj Finserv Ltd",
+    "sector": "Banking & Financial Services",
+    "market_cap_category": "Large Cap",
+    "base_price": 1840.0,
+    "token": "16675"
+  },
+  {
+    "symbol": "TATASTEEL",
+    "name": "Tata Steel Ltd",
+    "sector": "Metals & Mining",
+    "market_cap_category": "Large Cap",
+    "base_price": 155.0,
+    "token": "3499"
+  },
+  {
+    "symbol": "POWERGRID",
+    "name": "Power Grid Corp of India Ltd",
+    "sector": "Energy & Petrochemicals",
+    "market_cap_category": "Large Cap",
+    "base_price": 335.0,
+    "token": "14977"
+  },
+  {
+    "symbol": "M&M",
+    "name": "Mahindra & Mahindra Ltd",
+    "sector": "Automobiles",
+    "market_cap_category": "Large Cap",
+    "base_price": 3050.0,
+    "token": "2031"
+  },
+  {
+    "symbol": "ASIANPAINT",
+    "name": "Asian Paints Ltd",
+    "sector": "Consumer Goods & FMCG",
+    "market_cap_category": "Large Cap",
+    "base_price": 3100.0,
+    "token": "236"
+  },
+  {
+    "symbol": "SIEMENS",
+    "name": "Siemens Ltd",
+    "sector": "Infrastructure & Capital Goods",
+    "market_cap_category": "Large Cap",
+    "base_price": 7200.0,
+    "token": "3150"
+  },
+  {
+    "symbol": "BEL",
+    "name": "Bharat Electronics Ltd",
+    "sector": "Defence & Aerospace",
+    "market_cap_category": "Large Cap",
+    "base_price": 295.0,
+    "token": "383"
+  },
+  {
+    "symbol": "HAL",
+    "name": "Hindustan Aeronautics Ltd",
+    "sector": "Defence & Aerospace",
+    "market_cap_category": "Large Cap",
+    "base_price": 4480.0,
+    "token": "2303"
+  },
+  {
+    "symbol": "TRENT",
+    "name": "Trent Ltd",
+    "sector": "Consumer Goods & FMCG",
+    "market_cap_category": "Large Cap",
+    "base_price": 7650.0,
+    "token": "1964"
+  },
+  {
+    "symbol": "JSWSTEEL",
+    "name": "JSW Steel Ltd",
+    "sector": "Metals & Mining",
+    "market_cap_category": "Large Cap",
+    "base_price": 995.0,
+    "token": "11723"
+  },
+  {
+    "symbol": "ULTRACEMCO",
+    "name": "UltraTech Cement Ltd",
+    "sector": "Infrastructure & Capital Goods",
+    "market_cap_category": "Large Cap",
+    "base_price": 11200.0,
+    "token": "11532"
+  },
+  {
+    "symbol": "NESTLEIND",
+    "name": "Nestle India Ltd",
+    "sector": "Consumer Goods & FMCG",
+    "market_cap_category": "Large Cap",
+    "base_price": 2450.0,
+    "token": "17963"
+  },
+  {
+    "symbol": "GRASIM",
+    "name": "Grasim Industries Ltd",
+    "sector": "Infrastructure & Capital Goods",
+    "market_cap_category": "Large Cap",
+    "base_price": 2680.0,
+    "token": "1232"
+  },
+  {
+    "symbol": "CIPLA",
+    "name": "Cipla Ltd",
+    "sector": "Pharmaceuticals & Healthcare",
+    "market_cap_category": "Large Cap",
+    "base_price": 1580.0,
+    "token": "694"
+  },
+  {
+    "symbol": "WIPRO",
+    "name": "Wipro Ltd",
+    "sector": "Information Technology",
+    "market_cap_category": "Large Cap",
+    "base_price": 540.0,
+    "token": "3787"
+  },
+  {
+    "symbol": "DRREDDY",
+    "name": "Dr Reddy's Laboratories Ltd",
+    "sector": "Pharmaceuticals & Healthcare",
+    "market_cap_category": "Large Cap",
+    "base_price": 6650.0,
+    "token": "881"
+  },
+  {
+    "symbol": "TECHM",
+    "name": "Tech Mahindra Ltd",
+    "sector": "Information Technology",
+    "market_cap_category": "Large Cap",
+    "base_price": 1620.0,
+    "token": "13538"
+  },
+  {
+    "symbol": "HINDALCO",
+    "name": "Hindalco Industries Ltd",
+    "sector": "Metals & Mining",
+    "market_cap_category": "Large Cap",
+    "base_price": 710.0,
+    "token": "1363"
+  },
+  {
+    "symbol": "DIVISLAB",
+    "name": "Divi's Laboratories Ltd",
+    "sector": "Pharmaceuticals & Healthcare",
+    "market_cap_category": "Large Cap",
+    "base_price": 5800.0,
+    "token": "10940"
+  },
+  {
+    "symbol": "APOLLOHOSP",
+    "name": "Apollo Hospitals Enterprise Ltd",
+    "sector": "Pharmaceuticals & Healthcare",
+    "market_cap_category": "Large Cap",
+    "base_price": 7150.0,
+    "token": "157"
+  },
+  {
+    "symbol": "EICHERMOT",
+    "name": "Eicher Motors Ltd",
+    "sector": "Automobiles",
+    "market_cap_category": "Large Cap",
+    "base_price": 4750.0,
+    "token": "910"
+  },
+  {
+    "symbol": "BPCL",
+    "name": "Bharat Petroleum Corp Ltd",
+    "sector": "Energy & Petrochemicals",
+    "market_cap_category": "Large Cap",
+    "base_price": 360.0,
+    "token": "526"
+  },
+  {
+    "symbol": "BRITANNIA",
+    "name": "Britannia Industries Ltd",
+    "sector": "Consumer Goods & FMCG",
+    "market_cap_category": "Large Cap",
+    "base_price": 5950.0,
+    "token": "547"
+  },
+  {
+    "symbol": "BAJAJ-AUTO",
+    "name": "Bajaj Auto Ltd",
+    "sector": "Automobiles",
+    "market_cap_category": "Large Cap",
+    "base_price": 11600.0,
+    "token": "16669"
+  },
+  {
+    "symbol": "HEROMOTOCO",
+    "name": "Hero MotoCorp Ltd",
+    "sector": "Automobiles",
+    "market_cap_category": "Large Cap",
+    "base_price": 5420.0,
+    "token": "1348"
+  },
+  {
+    "symbol": "TATACONSUM",
+    "name": "Tata Consumer Products Ltd",
+    "sector": "Consumer Goods & FMCG",
+    "market_cap_category": "Large Cap",
+    "base_price": 1150.0,
+    "token": "3432"
+  },
+  {
+    "symbol": "LTIM",
+    "name": "LTIMindtree Ltd",
+    "sector": "Information Technology",
+    "market_cap_category": "Large Cap",
+    "base_price": 6100.0,
+    "token": "17818"
+  },
+  {
+    "symbol": "PIDILITIND",
+    "name": "Pidilite Industries Ltd",
+    "sector": "Chemicals & Materials",
+    "market_cap_category": "Mid Cap",
+    "base_price": 3180.0,
+    "token": "2664"
+  },
+  {
+    "symbol": "VEDL",
+    "name": "Vedanta Ltd",
+    "sector": "Metals & Mining",
+    "market_cap_category": "Mid Cap",
+    "base_price": 480.0,
+    "token": "3063"
+  },
+  {
+    "symbol": "ZOMATO",
+    "name": "Zomato Ltd",
+    "sector": "Consumer Tech & Internet",
+    "market_cap_category": "Mid Cap",
+    "base_price": 275.0,
+    "token": "5097"
+  },
+  {
+    "symbol": "POLYCAB",
+    "name": "Polycab India Ltd",
+    "sector": "Infrastructure & Capital Goods",
+    "market_cap_category": "Mid Cap",
+    "base_price": 6850.0,
+    "token": "9590"
+  }
+]

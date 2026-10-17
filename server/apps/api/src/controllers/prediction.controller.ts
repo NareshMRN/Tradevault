@@ -26,7 +26,7 @@ export class PredictionController {
         try {
           const userCreds = await ApiCredential.find({
             userId: req.user.id,
-            provider: { $in: ["groq", "gemini", "mistral", "nvidia", "openrouter"] },
+            provider: { $in: ["groq", "gemini", "openrouter"] },
           });
           for (const cred of userCreds) {
             try {
@@ -61,10 +61,10 @@ export class PredictionController {
   public static async getLatest(req: Request, res: Response): Promise<void> {
     try {
       const symbol = String(req.params.symbol || "");
-      const prediction = await PredictionService.getLatestPrediction(symbol);
+      let prediction = await PredictionService.getLatestPrediction(symbol);
       if (!prediction) {
-        res.status(404).json({ error: `No stored prediction found for ${symbol}` });
-        return;
+        // Automatically generate on-demand so every stock returns valid council analysis immediately
+        prediction = await PredictionService.runPipeline(symbol, "5d", req.user?.id);
       }
       res.status(200).json(prediction);
     } catch (err: any) {

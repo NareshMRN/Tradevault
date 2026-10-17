@@ -372,7 +372,8 @@ marketRouter.get("/market/quote/:ticker", async (req: Request, res: Response): P
       const timeStr = d.toISOString().split("T")[0];
       if (!seen.has(timeStr)) {
         seen.add(timeStr);
-        const change = (Math.random() - 0.48) * (basePrice * 0.02);
+        const daySeed = (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate() + cleanTicker.charCodeAt(0)) % 100;
+        const change = ((daySeed - 49) / 100) * (basePrice * 0.015);
         p = Math.max(10, p + change);
         chartData.push({
           time: timeStr,
@@ -381,7 +382,7 @@ marketRouter.get("/market/quote/:ticker", async (req: Request, res: Response): P
       }
     }
 
-    const currentPrice = growwQuote?.price || Number(p.toFixed(2));
+    const currentPrice = growwQuote?.price || Number(basePrice.toFixed(2));
     const prevClose = growwQuote?.previousClose || Number((currentPrice * 0.985).toFixed(2));
     const change = Number((currentPrice - prevClose).toFixed(2));
     const changePct = Number(((change / prevClose) * 100).toFixed(2));
@@ -453,3 +454,142 @@ marketRouter.get("/market/indices", async (_req: Request, res: Response): Promis
     res.status(500).json({ error: err.message });
   }
 });
+
+// Helper for Node-side IST market status fallback
+function computeLocalISTMarketStatus(demoState?: string) {
+  // Current time in IST (UTC + 5 hours 30 minutes)
+  const nowUtc = new Date();
+  const istOffsetMs = 5.5 * 60 * 60 * 1000;
+  const nowIst = new Date(nowUtc.getTime() + istOffsetMs);
+
+  const year = nowIst.getUTCFullYear();
+  const month = String(nowIst.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(nowIst.getUTCDate()).padStart(2, "0");
+  const dateStr = `${year}-${month}-${day}`;
+  const dayOfWeek = nowIst.getUTCDay(); // 0 = Sun, 6 = Sat
+  const hours = nowIst.getUTCHours();
+  const minutes = nowIst.getUTCMinutes();
+  const seconds = nowIst.getUTCSeconds();
+  const timeInMinutes = hours * 60 + minutes;
+
+  let state: "OPEN" | "PRE_OPEN" | "AFTER_CLOSE" | "OVERNIGHT" | "WEEKEND" | "HOLIDAY" = "OVERNIGHT";
+  let isOpen = false;
+  let reason: string | null = null;
+  let nextCloseIst: string | null = null;
+
+  // Weekends
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    state = "WEEKEND";
+    reason = dayOfWeek === 6 ? "Saturday" : "Sunday";
+  } else {
+    // Weekday: 09:00 = 540 min, 09:15 = 555 min, 15:30 = 930 min
+    if (timeInMinutes < 540) {
+      state = "OVERNIGHT";
+      reason = "Pre-market overnight session";
+    } else if (timeInMinutes < 555) {
+      state = "PRE_OPEN";
+      reason = "Pre-open order matching (9:00 - 9:15 AM IST)";
+    } else if (timeInMinutes < 930) {
+      state = "OPEN";
+      isOpen = true;
+      reason = "Normal market trading hours (9:15 AM - 3:30 PM IST)";
+      nextCloseIst = `${dateStr}T15:30:00+05:30`;
+    } else {
+      state = "AFTER_CLOSE";
+      reason = "Market closed for today at 3:30 PM IST";
+    }
+  }
+
+  // Last session date
+  let lastSessionDate = dateStr;
+  if (state !== "OPEN" && state !== "AFTER_CLOSE") {
+    // Walk back to previous weekday
+    const prev = new Date(nowIst.getTime());
+    prev.setUTCDate(prev.getUTCDate() - 1);
+    while (prev.getUTCDay() === 0 || prev.getUTCDay() === 6) {
+      prev.setUTCDate(prev.getUTCDate() - 1);
+    }
+    const py = prev.getUTCFullYear();
+    const pm = String(prev.getUTCMonth() + 1).padStart(2, "0");
+    const pd = String(prev.getUTCDate()).padStart(2, "0");
+    lastSessionDate = `${py}-${pm}-${pd}`;
+  }
+
+  // Next open date & seconds to next open
+  let nextOpenDate = new Date(Date.UTC(nowIst.getUTCFullYear(), nowIst.getUTCMonth(), nowIst.getUTCDate(), 9, 15, 0));
+  if (state === "OVERNIGHT" || state === "PRE_OPEN") {
+    // Opens today at 9:15 IST
+  } else {
+    // Move to next trading weekday
+    nextOpenDate.setUTCDate(nextOpenDate.getUTCDate() + 1);
+    while (nextOpenDate.getUTCDay() === 0 || nextOpenDate.getUTCDay() === 6) {
+      nextOpenDate.setUTCDate(nextOpenDate.getUTCDate() + 1);
+    }
+  }
+  const nextOpenY = nextOpenDate.getUTCFullYear();
+  const nextOpenM = String(nextOpenDate.getUTCMonth() + 1).padStart(2, "0");
+  const nextOpenD = String(nextOpenDate.getUTCDate()).padStart(2, "0");
+  const nextOpenIstStr = `${nextOpenY}-${nextOpenM}-${nextOpenD}T09:15:00+05:30`;
+
+  // Seconds calculation relative to IST
+  const targetUtcMs = Date.UTC(nextOpenY, Number(nextOpenM) - 1, Number(nextOpenD), 3, 45, 0); // 09:15 IST = 03:45 UTC
+  const diffSec = Math.max(0, Math.floor((targetUtcMs - nowUtc.getTime()) / 1000));
+
+  // Demo override
+  const effectiveDemo = (demoState || process.env.DEMO_MARKET_STATE || "").trim().toUpperCase();
+  let isDemo = false;
+  const mappedDemo = effectiveDemo === "CLOSED" ? "AFTER_CLOSE" : effectiveDemo;
+  if (["OPEN", "PRE_OPEN", "AFTER_CLOSE", "OVERNIGHT", "WEEKEND", "HOLIDAY"].includes(mappedDemo)) {
+    state = mappedDemo as any;
+    isDemo = true;
+    isOpen = state === "OPEN";
+    if (isOpen) {
+      nextCloseIst = `${dateStr}T15:30:00+05:30`;
+    }
+  }
+
+  const nowIstStr = `${dateStr}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}+05:30`;
+
+  return {
+    state,
+    is_open: isOpen,
+    now_ist: nowIstStr,
+    next_open_ist: nextOpenIstStr,
+    next_close_ist: nextCloseIst,
+    last_session_date: lastSessionDate,
+    seconds_to_next_open: diffSec,
+    reason,
+    is_demo: isDemo,
+  };
+}
+
+// GET /api/market/status: Proxies Agent Runtime /internal/market/status with server-side IST fallback
+marketRouter.get("/market/status", async (req: Request, res: Response): Promise<void> => {
+  const demoState = (req.query.demoState || req.query.demo_state || "") as string;
+
+  try {
+    const runtimeUrl = `${env.AGENT_RUNTIME_URL}/internal/market/status${
+      demoState ? `?demo_state=${encodeURIComponent(demoState)}` : ""
+    }`;
+
+    const runtimeRes = await fetch(runtimeUrl, {
+      method: "GET",
+      headers: {
+        "x-internal-secret": env.AGENT_RUNTIME_INTERNAL_SECRET,
+      },
+      signal: AbortSignal.timeout(3000),
+    });
+
+    if (runtimeRes.ok) {
+      const data = await runtimeRes.json();
+      res.json(data);
+      return;
+    }
+  } catch (_err) {
+    // Fall back to server-side Node IST calculation if runtime is cold or unreachable
+  }
+
+  const fallback = computeLocalISTMarketStatus(demoState);
+  res.json(fallback);
+});
+

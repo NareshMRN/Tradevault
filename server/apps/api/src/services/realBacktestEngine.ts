@@ -7,6 +7,7 @@ export interface RealBacktestResult {
   probabilityOfBacktestOverfitting: number;
   maxDrawdownPct: number;
   isEligibleForPaperTrading: boolean;
+  reliabilityScore: number;
   annualizedReturn: number;
   annualizedVolatility: number;
   winRate: number;
@@ -131,12 +132,16 @@ export class RealBacktestEngine {
 
     const benchmarkReturn = Number((((equity - 100) / 100) * 100 * 0.85).toFixed(2));
 
+    // Reliability Score (0-100) composite
+    const reliabilityScore = Math.max(0, Math.min(100, Math.round((deflatedSharpeRatio * 50) + ((1 - pbo) * 50))));
+
     return {
       sharpeRatio,
       deflatedSharpeRatio,
       probabilityOfBacktestOverfitting: pbo,
       maxDrawdownPct,
       isEligibleForPaperTrading,
+      reliabilityScore,
       annualizedReturn,
       annualizedVolatility,
       winRate,

@@ -109,8 +109,9 @@ class OverfittingValidationEngine:
         max_drawdown = float(abs(np.min(drawdowns)) * 100.0)
 
         # Statistical paper-trading eligibility gate
-        # Requirements: DSR >= 0.90, PBO < 0.45, Sharpe >= 0.80
+        # Requirements: DSR >= 0.85, PBO <= 0.45, Sharpe >= 0.80
         is_eligible = bool(deflated_sharpe >= 0.85 and pbo <= 0.45 and observed_sharpe >= 0.80)
+        reliability_score = max(0, min(100, int((deflated_sharpe * 50) + ((1.0 - pbo) * 50))))
 
         return {
             "strategyName": strategy_name,
@@ -119,4 +120,5 @@ class OverfittingValidationEngine:
             "probabilityOfBacktestOverfitting": round(pbo, 4),
             "maxDrawdownPct": round(max_drawdown, 2),
             "isEligibleForPaperTrading": is_eligible,
+            "reliabilityScore": reliability_score,
         }

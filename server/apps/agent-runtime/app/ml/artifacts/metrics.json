@@ -1,0 +1,48 @@
+{
+  "base_rate": 0.2941,
+  "threshold": 0.52,
+  "n_test_rows": 9282,
+  "n_picks": 225,
+  "precision_at_threshold": 0.3733,
+  "lift_over_base_rate": 0.2693,
+  "avg_picks_per_day": 0.95,
+  "top5_daily_hit_rate": 0.3336,
+  "top5_avg_excess_return_after_costs": -0.00059,
+  "train_date_range": [
+    "2021-11-17",
+    "2024-10-29"
+  ],
+  "val_date_range": [
+    "2024-11-06",
+    "2025-10-21"
+  ],
+  "test_date_range": [
+    "2025-10-30",
+    "2026-10-16"
+  ],
+  "baseline_model": {
+    "name": "Logistic Regression (Standardized)",
+    "test_auc": 0.5311,
+    "test_accuracy": 0.7057
+  },
+  "lgbm_test_auc": 0.5449,
+  "feature_importances": {
+    "gap": 205,
+    "nifty_ret_5d": 154,
+    "vol_trend": 115,
+    "ret_1d": 98,
+    "volatility_20d": 98,
+    "rsi_14": 88,
+    "ret_5d": 87,
+    "dist_from_20d_high": 75,
+    "rel_strength_20d": 71,
+    "dist_from_20d_low": 66,
+    "ret_20d": 49
+  },
+  "limitations": [
+    "Survivorship bias: Model trained on current liquid Nifty 50 constituents only.",
+    "Modest edge expected: In liquid Indian large caps, honest model edge is 2-8% above base rate.",
+    "Execution slippage: Opening bell prices at 9:15 AM IST may deviate from ideal theoretical fills.",
+    "Educational screening tool: The model provides probabilistic ranking, not guaranteed price forecasts or SEBI-registered financial advice."
+  ]
+}

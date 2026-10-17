@@ -71,7 +71,7 @@ class ProbabilisticForecastingEngine:
         }
 
         try:
-            client = AsyncIOMotorClient(settings.MONGODB_URI)
+            client = AsyncIOMotorClient(settings.MONGODB_URI, serverSelectionTimeoutMS=500)
             db = client.get_default_database()
             await db.forecasts.update_one(
                 {"ticker": ticker.upper(), "horizon": horizon, "asOfDate": as_of_date},

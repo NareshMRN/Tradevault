@@ -12,11 +12,9 @@ import { requireAuth } from "../middleware/auth";
 import { validateBody } from "../middleware/validate";
 import { AgentRuntimeClient } from "../services/agentRuntimeClient";
 import { decryptCredential } from "../services/encryption";
-import { logAuditEvent } from "../services/auditLogger";
 import { PredictionService } from "../prediction/prediction.service";
 
 export const analysisRouter = Router();
-
 
 // Launch a multi-agent debate analysis run
 analysisRouter.post(
@@ -25,7 +23,7 @@ analysisRouter.post(
   validateBody(analysisRunRequestSchema),
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { ticker, horizon, minConfidence, debateRounds, requireUnanimousConvergence } = req.body;
+      const { ticker, horizon, minConfidence, debateRounds, requireUnanimousConvergence, language } = req.body;
 
       // Create new agent run record
       const run = await AgentRun.create({
@@ -38,7 +36,7 @@ analysisRouter.post(
       // Decrypt any user-supplied LLM API keys in memory to pass to runtime
       const userCreds = await ApiCredential.find({
         userId: req.user!.id,
-        provider: { $in: ["groq", "gemini", "mistral", "nvidia", "openrouter", "agent_router"] },
+        provider: { $in: ["groq", "gemini", "openrouter", "agent_router"] },
       });
 
       const userApiKeys: Record<string, string> = {};
@@ -51,14 +49,6 @@ analysisRouter.post(
           );
         } catch (e) {}
       }
-
-      await logAuditEvent({
-        userId: req.user!.id,
-        eventType: "analysis_run_started",
-        entityType: "agent_run",
-        entityId: run._id.toString(),
-        payload: { ticker, horizon, debateRounds, minConfidence },
-      });
 
       // Trigger multi-agent pipeline asynchronously via PredictionService
       (async () => {
@@ -83,7 +73,7 @@ analysisRouter.post(
             {
               runId: run._id,
               agentRole: "fundamentals_analyst" as const,
-              llmProvider: "mistral" as const,
+              llmProvider: "gemini" as const,
               sequenceIndex: 2,
               content: predictionResult.fundamental.agent.reasoning_summary,
               structuredOutput: predictionResult.fundamental.agent,
@@ -99,7 +89,7 @@ analysisRouter.post(
             {
               runId: run._id,
               agentRole: "risk_manager" as const,
-              llmProvider: "nvidia" as const,
+              llmProvider: "groq" as const,
               sequenceIndex: 4,
               content: predictionResult.risk.agent.reasoning_summary,
               structuredOutput: predictionResult.risk.agent,
@@ -107,7 +97,7 @@ analysisRouter.post(
             {
               runId: run._id,
               agentRole: "portfolio_manager" as const,
-              llmProvider: "openrouter" as const,
+              llmProvider: "groq" as const,
               sequenceIndex: 5,
               content: predictionResult.verification.reasoning_summary,
               structuredOutput: {
@@ -124,7 +114,6 @@ analysisRouter.post(
             } catch (e) {}
           }
 
-
           // Check if strategy backtest is eligible for paper trading
           const latestBacktest = await Backtest.findOne({
             userId: req.user!.id,
@@ -132,11 +121,17 @@ analysisRouter.post(
             status: "completed",
           }).sort({ completedAt: -1 });
 
-          let finalAction = predictionResult.prediction.action;
-          // Hard rule: If backtest eligibility is false, force 'hold'
-          if (latestBacktest && !latestBacktest.isEligibleForPaperTrading && finalAction !== "hold") {
-            finalAction = "hold";
-            predictionResult.prediction.reasoning = `[OVERFITTING GATE ENGAGED]: Strategy backtest for ${ticker} has not passed deflated Sharpe / PBO robustness checks. Recommendation strictly forced to HOLD. Original draft was ${predictionResult.prediction.action}.`;
+          const finalAction = predictionResult.prediction.action;
+          // Soft Overfitting Gate: Keep DSR/PBO math, display Reliability Score (0-100) and warning banner; do NOT block recommendations with forced 'HOLD'.
+          let reliabilityScore = 85;
+          if (latestBacktest) {
+            const dsrPart = (latestBacktest.deflatedSharpeRatio || 0.8) * 50;
+            const pboPart = (1.0 - (latestBacktest.probabilityOfBacktestOverfitting || 0.2)) * 50;
+            reliabilityScore = Math.max(0, Math.min(100, Math.round(dsrPart + pboPart)));
+
+            if (!latestBacktest.isEligibleForPaperTrading) {
+              predictionResult.prediction.reasoning += ` [RELIABILITY NOTICE]: Strategy backtest indicates elevated overfitting probability (Reliability Score: ${reliabilityScore}/100, DSR: ${latestBacktest.deflatedSharpeRatio}, PBO: ${latestBacktest.probabilityOfBacktestOverfitting}). Action maintained as ${finalAction} for educational evaluation.`;
+            }
           }
 
           const confidenceVal = Number((predictionResult.confidence.overall_confidence / 100).toFixed(2));
@@ -172,18 +167,6 @@ analysisRouter.post(
               status: "pending",
             });
           }
-
-          await logAuditEvent({
-            userId: req.user!.id,
-            eventType: "analysis_run_completed",
-            entityType: "agent_run",
-            entityId: run._id.toString(),
-            payload: {
-              finalAction,
-              confidence: confidenceVal,
-              predictionId: predictionResult.predictionId,
-            },
-          });
         } catch (err: any) {
           console.error(`[AnalysisRoute] Error executing prediction pipeline:`, err);
           await AgentRun.findByIdAndUpdate(run._id, {

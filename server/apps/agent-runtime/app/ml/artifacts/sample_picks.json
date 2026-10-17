@@ -1,0 +1,162 @@
+{
+  "generated_at": "2026-10-16T09:20:00+05:30",
+  "session_date": "2026-10-16",
+  "data_source": "sample",
+  "threshold": 0.52,
+  "base_rate": 0.2941,
+  "total_screened": 40,
+  "passed_threshold_count": 5,
+  "picks": [
+    {
+      "symbol": "RELIANCE",
+      "full_ticker": "RELIANCE.NS",
+      "sector": "Energy",
+      "score": 0.584,
+      "raw_score": 0.562,
+      "threshold": 0.52,
+      "price": 2742.50,
+      "top_drivers": [
+        {
+          "feature": "gap",
+          "value": -0.0042,
+          "contribution": 0.142,
+          "description": "Overnight opening gap of -0.42%"
+        },
+        {
+          "feature": "vol_trend",
+          "value": 1.45,
+          "contribution": 0.088,
+          "description": "Volume running at 1.4x 20-day average"
+        },
+        {
+          "feature": "rel_strength_20d",
+          "value": 0.031,
+          "contribution": 0.065,
+          "description": "20-day relative strength vs Nifty at +3.10%"
+        }
+      ],
+      "explanation": "Overnight opening gap of -0.42%; Volume running at 1.4x 20-day average; 20-day relative strength vs Nifty at +3.10%."
+    },
+    {
+      "symbol": "TCS",
+      "full_ticker": "TCS.NS",
+      "sector": "IT",
+      "score": 0.562,
+      "raw_score": 0.541,
+      "threshold": 0.52,
+      "price": 4125.80,
+      "top_drivers": [
+        {
+          "feature": "ret_5d",
+          "value": 0.024,
+          "contribution": 0.118,
+          "description": "5-day trailing momentum of +2.40%"
+        },
+        {
+          "feature": "rsi_14",
+          "value": 54.2,
+          "contribution": 0.074,
+          "description": "14-day RSI indicator at 54.2"
+        },
+        {
+          "feature": "vol_trend",
+          "value": 1.12,
+          "contribution": 0.042,
+          "description": "Volume running at 1.1x 20-day average"
+        }
+      ],
+      "explanation": "5-day trailing momentum of +2.40%; 14-day RSI indicator at 54.2; Volume running at 1.1x 20-day average."
+    },
+    {
+      "symbol": "ICICIBANK",
+      "full_ticker": "ICICIBANK.NS",
+      "sector": "Banking",
+      "score": 0.551,
+      "raw_score": 0.533,
+      "threshold": 0.52,
+      "price": 1245.30,
+      "top_drivers": [
+        {
+          "feature": "rel_strength_20d",
+          "value": 0.028,
+          "contribution": 0.095,
+          "description": "20-day relative strength vs Nifty at +2.80%"
+        },
+        {
+          "feature": "gap",
+          "value": 0.0015,
+          "contribution": 0.052,
+          "description": "Overnight opening gap of +0.15%"
+        },
+        {
+          "feature": "nifty_ret_5d",
+          "value": 0.012,
+          "contribution": 0.038,
+          "description": "Index 5-day backdrop of +1.20%"
+        }
+      ],
+      "explanation": "20-day relative strength vs Nifty at +2.80%; Overnight opening gap of +0.15%; Index 5-day backdrop of +1.20%."
+    },
+    {
+      "symbol": "LT",
+      "full_ticker": "LT.NS",
+      "sector": "Capital Goods",
+      "score": 0.538,
+      "raw_score": 0.522,
+      "threshold": 0.52,
+      "price": 3610.00,
+      "top_drivers": [
+        {
+          "feature": "vol_trend",
+          "value": 1.35,
+          "contribution": 0.082,
+          "description": "Volume running at 1.4x 20-day average"
+        },
+        {
+          "feature": "dist_from_20d_high",
+          "value": -0.015,
+          "contribution": 0.061,
+          "description": "1.5% below 20-day high"
+        },
+        {
+          "feature": "ret_1d",
+          "value": 0.008,
+          "contribution": 0.045,
+          "description": "Prior-day return of +0.80%"
+        }
+      ],
+      "explanation": "Volume running at 1.4x 20-day average; 1.5% below 20-day high; Prior-day return of +0.80%."
+    },
+    {
+      "symbol": "INFY",
+      "full_ticker": "INFY.NS",
+      "sector": "IT",
+      "score": 0.531,
+      "raw_score": 0.519,
+      "threshold": 0.52,
+      "price": 1885.50,
+      "top_drivers": [
+        {
+          "feature": "ret_5d",
+          "value": 0.018,
+          "contribution": 0.071,
+          "description": "5-day trailing momentum of +1.80%"
+        },
+        {
+          "feature": "rsi_14",
+          "value": 51.6,
+          "contribution": 0.048,
+          "description": "14-day RSI indicator at 51.6"
+        },
+        {
+          "feature": "gap",
+          "value": -0.002,
+          "contribution": 0.035,
+          "description": "Overnight opening gap of -0.20%"
+        }
+      ],
+      "explanation": "5-day trailing momentum of +1.80%; 14-day RSI indicator at 51.6; Overnight opening gap of -0.20%."
+    }
+  ],
+  "top_candidates": []
+}

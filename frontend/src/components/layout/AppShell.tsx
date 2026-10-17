@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { MarketStatusBanner } from '../common/MarketStatusBanner';
 import { useState } from 'react';
 
 export function AppShell() {
@@ -11,6 +12,7 @@ export function AppShell() {
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <TopBar onMenuClick={() => setSidebarOpen(true)} />
+        <MarketStatusBanner />
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 custom-scrollbar bg-background">
           <Outlet />
         </main>

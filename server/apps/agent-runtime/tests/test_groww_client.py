@@ -96,42 +96,45 @@ def test_master_agent_model_mapping():
     """
     assert AGENT_MODEL_MAPPING["fundamentals_analyst"] == {
         "provider": "gemini",
-        "model": "gemini-2.0-flash",
+        "model": settings.GEMINI_MODEL,
     }
-    assert AGENT_MODEL_MAPPING["sentiment_analyst"] == {
+    assert AGENT_MODEL_MAPPING["news_analyst"] == {
         "provider": "gemini",
-        "model": "gemini-2.0-flash",
+        "model": settings.GEMINI_MODEL,
+    }
+    assert AGENT_MODEL_MAPPING["bull_researcher"] == {
+        "provider": "gemini",
+        "model": settings.GEMINI_MODEL,
+    }
+    assert AGENT_MODEL_MAPPING["bear_researcher"] == {
+        "provider": "gemini",
+        "model": settings.GEMINI_MODEL,
+    }
+    assert AGENT_MODEL_MAPPING["multilingual_synthesis"] == {
+        "provider": "gemini",
+        "model": settings.GEMINI_MODEL,
     }
     assert AGENT_MODEL_MAPPING["technical_analyst"] == {
         "provider": "groq",
-        "model": "llama-3.3-70b-versatile",
+        "model": settings.GROQ_MODEL,
     }
-    assert AGENT_MODEL_MAPPING["macro_analyst"] == {
-        "provider": "nvidia",
-        "model": "meta/llama-3.3-70b-instruct",
-    }
-    assert AGENT_MODEL_MAPPING["news_analyst"] == {
-        "provider": "mistral",
-        "model": "mistral-large-latest",
-    }
-    assert AGENT_MODEL_MAPPING["bull_researcher"] == {
+    assert AGENT_MODEL_MAPPING["sentiment_analyst"] == {
         "provider": "groq",
-        "model": "llama-3.3-70b-versatile",
-    }
-    assert AGENT_MODEL_MAPPING["bear_researcher"] == {
-        "provider": "groq",
-        "model": "llama-3.3-70b-versatile",
+        "model": settings.GROQ_MODEL,
     }
     assert AGENT_MODEL_MAPPING["trader"] == {
-        "provider": "agent_router",
-        "model": "deepseek-v4-flash",
+        "provider": "groq",
+        "model": settings.GROQ_MODEL,
     }
     assert AGENT_MODEL_MAPPING["risk_manager"] == {
-        "provider": "agent_router",
-        "model": "claude-opus-4.8",
+        "provider": "groq",
+        "model": settings.GROQ_MODEL,
     }
     assert AGENT_MODEL_MAPPING["portfolio_manager"] == {
-        "provider": "agent_router",
-        "model": "gpt-6-astra",
+        "provider": "groq",
+        "model": settings.GROQ_MODEL,
     }
-    assert AGENT_MODEL_MAPPING["fallback_provider"] == "openrouter"
+    assert AGENT_MODEL_MAPPING["fallback_chain"] == {
+        "gemini": "groq",
+        "groq": "gemini",
+    }

@@ -7,7 +7,6 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { WatchlistPage } from './pages/WatchlistPage';
 import { OrchestrationPage } from './pages/OrchestrationPage';
-import { ProposalsPage } from './pages/ProposalsPage';
 import { BacktestsPage } from './pages/BacktestsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -15,9 +14,12 @@ import { LandingPage } from './pages/LandingPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { SectorHeatmapPage } from './pages/SectorHeatmapPage';
+import { TopPicksPage } from './pages/TopPicksPage';
+import { MLPicksPage } from './pages/MLPicksPage';
+import { PaperPortfolioPage } from './pages/PaperPortfolioPage';
 import { RequireAuth, RedirectIfAuth } from './components/auth/RouteGuards';
 import { useAuthStore } from './store/authStore';
-import { useKillSwitchStore } from './store/killSwitchStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,12 +33,10 @@ const queryClient = new QueryClient({
 
 function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
-  const initKillSwitch = useKillSwitchStore((s) => s.init);
 
   useEffect(() => {
     checkAuth();
-    initKillSwitch();
-  }, [checkAuth, initKillSwitch]);
+  }, [checkAuth]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -59,13 +59,17 @@ function App() {
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route element={<AppShell />}>
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/sectors" element={<SectorHeatmapPage />} />
+              <Route path="/picks" element={<TopPicksPage />} />
+              <Route path="/ml-picks" element={<MLPicksPage />} />
+              <Route path="/paper-portfolio" element={<PaperPortfolioPage />} />
               <Route path="/watchlist" element={<WatchlistPage />} />
               <Route path="/orchestration" element={<OrchestrationPage />} />
-              <Route path="/proposals" element={<ProposalsPage />} />
+              <Route path="/proposals" element={<Navigate to="/dashboard" replace />} />
               <Route path="/backtests" element={<BacktestsPage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/settings/risk" element={<SettingsPage />} />
-              <Route path="/settings/api-keys" element={<SettingsPage />} />
+              <Route path="/settings/api-keys" element={<Navigate to="/settings/risk" replace />} />
               <Route path="/settings/notifications" element={<SettingsPage />} />
             </Route>
           </Route>

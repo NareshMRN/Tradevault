@@ -5,8 +5,6 @@ export interface OnboardingPayload {
   allocatableCapital: number;
   maxPositionPct: number;
   maxDailyLossPct: number;
-  alpacaPaperKey: string;
-  alpacaPaperSecret: string;
   displayName?: string;
   email?: string;
   password?: string;
@@ -19,8 +17,7 @@ export interface RiskProfile {
   allocatableCapital: number;
   maxPositionPct: number;
   maxDailyLossPct: number;
-  liveTradingEnabled: boolean;
-  liveTradingConfirmedAt?: string | null;
+  liveTradingEnabled?: boolean;
 }
 
 export const onboardingService = {
@@ -34,13 +31,5 @@ export const onboardingService = {
 
   updateRiskProfile: async (data: Partial<RiskProfile>): Promise<RiskProfile> => {
     return api.put<RiskProfile>("/risk-profile", data);
-  },
-
-  confirmLiveTrading: async (confirmationPhrase: string, alpacaLiveKey: string, alpacaLiveSecret: string) => {
-    return api.post("/risk-profile/confirm-live-trading", {
-      confirmationPhrase,
-      alpacaLiveKey,
-      alpacaLiveSecret,
-    });
   },
 };

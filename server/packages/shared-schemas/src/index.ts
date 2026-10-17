@@ -16,8 +16,6 @@ export const onboardingSchema = z.object({
   maxDailyLossPct: z.number().min(1).max(10),
   marketFocus: z.array(z.enum(["equities", "crypto"])).min(1),
   notificationEmail: z.string().email(),
-  alpacaPaperKey: z.string().min(1),
-  alpacaPaperSecret: z.string().min(1),
 });
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
 
@@ -35,30 +33,14 @@ export const updateRiskProfileSchema = z.object({
 });
 export type UpdateRiskProfileInput = z.infer<typeof updateRiskProfileSchema>;
 
-export const confirmLiveTradingSchema = z.object({
-  confirmationPhrase: z.string().refine(
-    (val) => val === "I understand this will place real trades with real capital",
-    {
-      message: "Exact confirmation phrase required: 'I understand this will place real trades with real capital'",
-    }
-  ),
-  alpacaLiveKey: z.string().min(1),
-  alpacaLiveSecret: z.string().min(1),
-});
-export type ConfirmLiveTradingInput = z.infer<typeof confirmLiveTradingSchema>;
-
 // ==========================================
 // API Credentials
 // ==========================================
 export const apiCredentialProviderSchema = z.enum([
   "groq",
   "gemini",
-  "mistral",
-  "nvidia",
   "openrouter",
   "agent_router",
-  "alpaca_paper",
-  "alpaca_live",
 ]);
 export type ApiCredentialProvider = z.infer<typeof apiCredentialProviderSchema>;
 
@@ -87,6 +69,7 @@ export const analysisRunRequestSchema = z.object({
   minConfidence: z.number().min(0.5).max(0.95).default(0.7),
   debateRounds: z.number().int().min(1).max(3).default(2),
   requireUnanimousConvergence: z.boolean().default(false),
+  language: z.enum(["en", "kn", "hi"]).default("en"),
 });
 export type AnalysisRunRequest = z.infer<typeof analysisRunRequestSchema>;
 
@@ -178,3 +161,132 @@ export const portfolioManagerOutputSchema = z.object({
   forecast_dispersion_note: z.string().max(300),
 });
 export type PortfolioManagerOutput = z.infer<typeof portfolioManagerOutputSchema>;
+
+// ==========================================
+// Discovery Scanner Schemas
+// ==========================================
+export const discoverySectorSchema = z.object({
+  sector: z.string(),
+  score: z.number().min(-1).max(1),
+  trend: z.enum(["bullish", "bearish", "neutral"]),
+  changePct5d: z.number(),
+  changePct20d: z.number(),
+  changePct60d: z.number(),
+  volumeTrend: z.number(),
+  volatility: z.number(),
+  relativeStrength: z.number(),
+  stockCount: z.number().int().nonnegative(),
+  topStocks: z.array(z.string()),
+});
+export type DiscoverySector = z.infer<typeof discoverySectorSchema>;
+
+export const discoveryStockPickSchema = z.object({
+  symbol: z.string(),
+  companyName: z.string(),
+  sector: z.string(),
+  marketCap: z.enum(["large", "mid", "small"]),
+  price: z.number().positive(),
+  changePct: z.number(),
+  score: z.number(),
+  riskTier: z.enum(["conservative", "balanced", "aggressive"]),
+  signals: z.array(z.string()),
+  quantMetrics: z.object({
+    momentum20d: z.number(),
+    momentum5d: z.number(),
+    rsi14: z.number(),
+    volatility: z.number(),
+    volumeRatio: z.number(),
+  }),
+  debateSummary: z
+    .object({
+      consensus: z.enum(["buy", "sell", "hold"]),
+      confidence: z.number().min(0).max(1),
+      bullCase: z.string(),
+      bearCase: z.string(),
+      synthesis: z.string(),
+      geminiGroqAgreement: z.number().min(0).max(1).optional(),
+      llmSource: z.enum(["live", "cache", "fallback"]),
+    })
+    .optional(),
+  dataSource: z.enum(["live", "cache", "sample"]),
+});
+export type DiscoveryStockPick = z.infer<typeof discoveryStockPickSchema>;
+
+export const discoveryScanResultSchema = z.object({
+  scanId: z.string(),
+  timestamp: z.string(),
+  benchmark: z.string().default("NIFTY 50"),
+  sectors: z.array(discoverySectorSchema),
+  picks: z.array(discoveryStockPickSchema),
+  topPicks: z.array(discoveryStockPickSchema),
+  dataSource: z.enum(["live", "cache", "sample"]),
+});
+export type DiscoveryScanResult = z.infer<typeof discoveryScanResultSchema>;
+
+export const discoveryPicksQuerySchema = z.object({
+  risk: z.enum(["conservative", "balanced", "aggressive", "low", "medium", "high"]).optional(),
+  sector: z.string().optional(),
+  limit: z.coerce.number().int().positive().max(50).default(10),
+});
+export type DiscoveryPicksQuery = z.infer<typeof discoveryPicksQuerySchema>;
+
+// ==========================================
+// Paper Trading Portfolio Schemas (INR)
+// ==========================================
+export const paperOrderRequestSchema = z.object({
+  ticker: z.string().trim().toUpperCase().min(1).max(20),
+  side: z.enum(["buy", "sell"]),
+  quantity: z.number().int().positive(),
+  orderType: z.enum(["market", "limit"]).default("market"),
+  limitPrice: z.number().positive().optional(),
+  proposalId: z.string().optional(),
+});
+export type PaperOrderRequest = z.infer<typeof paperOrderRequestSchema>;
+
+export const paperPositionSchema = z.object({
+  ticker: z.string(),
+  companyName: z.string(),
+  sector: z.string(),
+  quantity: z.number().int().positive(),
+  averagePrice: z.number().positive(),
+  currentPrice: z.number().positive(),
+  investedAmount: z.number().nonnegative(),
+  currentValue: z.number().nonnegative(),
+  unrealizedPnL: z.number(),
+  unrealizedPnLPct: z.number(),
+});
+export type PaperPosition = z.infer<typeof paperPositionSchema>;
+
+export const paperOrderSchema = z.object({
+  orderId: z.string(),
+  proposalId: z.string().optional(),
+  ticker: z.string(),
+  companyName: z.string().optional(),
+  side: z.enum(["buy", "sell"]),
+  quantity: z.number().int().positive(),
+  orderType: z.enum(["market", "limit"]),
+  limitPrice: z.number().positive().optional(),
+  executedPrice: z.number().positive(),
+  totalAmount: z.number().positive(),
+  status: z.enum(["filled", "rejected", "cancelled"]),
+  rejectionReason: z.string().optional(),
+  timestamp: z.string(),
+});
+export type PaperOrder = z.infer<typeof paperOrderSchema>;
+
+export const paperPortfolioSummarySchema = z.object({
+  cash: z.number().nonnegative(),
+  invested: z.number().nonnegative(),
+  portfolioValue: z.number().nonnegative(),
+  initialCapital: z.number().positive(),
+  currency: z.literal("INR").default("INR"),
+  totalPnL: z.number(),
+  totalPnLPct: z.number(),
+  realizedPnL: z.number(),
+  unrealizedPnL: z.number(),
+  winRatePct: z.number().min(0).max(100),
+  positionCount: z.number().int().nonnegative(),
+});
+export type PaperPortfolioSummary = z.infer<typeof paperPortfolioSummarySchema>;
+
+

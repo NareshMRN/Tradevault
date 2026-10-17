@@ -16,7 +16,7 @@ describe("AES-256-GCM Credential Encryption & Masking", () => {
   });
 
   it("should mask API keys displaying only the last 4 characters", () => {
-    const rawApiKey = "alpaca_live_key_987654321_ABCD";
+    const rawApiKey = "gemini_api_key_987654321_ABCD";
     const masked = maskKey(rawApiKey);
 
     expect(masked).toBe("••••-••••-ABCD");

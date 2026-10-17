@@ -8,6 +8,7 @@ export interface AnalysisRunPayload {
   minConfidence: number;
   debateRounds: number;
   requireUnanimousConvergence?: boolean;
+  language?: "en" | "kn" | "hi";
   userApiKeys?: Record<string, string>;
 }
 

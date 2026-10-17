@@ -4,36 +4,29 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PORT: int = 8000
     MONGODB_URI: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017/confluence")
-    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
     AGENT_RUNTIME_INTERNAL_SECRET: str = os.getenv(
         "AGENT_RUNTIME_INTERNAL_SECRET", "confluence-shared-internal-secret-token-xyz987"
     )
 
-    # API Keys
+    # Primary LLM API Keys
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_BASE_URL: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    MISTRAL_API_KEY: str = os.getenv("MISTRAL_API_KEY", "")
-    NVIDIA_API_KEY: str = os.getenv("NVIDIA_API_KEY", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
-    AGENT_ROUTER_API_KEY: str = os.getenv("AGENT_ROUTER_API_KEY", "")
 
-    # Groww Trading API
+    # Angel One SmartAPI (Market Data Provider)
+    ANGEL_CLIENT_ID: str = os.getenv("ANGEL_CLIENT_ID", "")
+    ANGEL_PIN: str = os.getenv("ANGEL_PIN", "")
+    ANGEL_API_KEY: str = os.getenv("ANGEL_API_KEY", "")
+    ANGEL_TOTP_SECRET: str = os.getenv("ANGEL_TOTP_SECRET", "")
+
+    # Groww Trading API (Optional Secondary Provider)
     GROWW_API_KEY: str = os.getenv("GROWW_API_KEY", "")
     GROWW_API_SECRET: str = os.getenv("GROWW_API_SECRET", "")
     GROWW_ACCESS_TOKEN: str = os.getenv("GROWW_ACCESS_TOKEN", "")
     GROWW_TOTP_SECRET: str = os.getenv("GROWW_TOTP_SECRET", "")
-
-    # Role Model Assignments (Active Provider Catalogs)
-    GROQ_REASONING_MODEL: str = "llama-3.3-70b-versatile"
-    GEMINI_MODEL: str = "gemini-2.0-flash"
-    MISTRAL_MODEL: str = "mistral-large-latest"
-    NVIDIA_MODEL: str = "meta/llama-3.3-70b-instruct"
-    OPENROUTER_MODEL: str = "deepseek/deepseek-chat"
-
-    # Agent Router Models
-    AGENT_ROUTER_TRADER_MODEL: str = "deepseek-v4-flash"
-    AGENT_ROUTER_RISK_MANAGER_MODEL: str = "claude-opus-4.8"
-    AGENT_ROUTER_PORTFOLIO_MANAGER_MODEL: str = "gpt-6-astra"
 
     class Config:
         env_file = ".env"
@@ -41,24 +34,25 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Master Role Assignment Mapping
+# Master Role Assignment Mapping (Gemini + Groq GPT committee)
 AGENT_MODEL_MAPPING = {
-    # Analysts
+    # Gemini Roles: Fundamentals, News summary, Bull vs Bear debate, Multilingual
     "fundamentals_analyst": {"provider": "gemini", "model": settings.GEMINI_MODEL},
-    "sentiment_analyst":    {"provider": "gemini", "model": settings.GEMINI_MODEL},
-    "technical_analyst":    {"provider": "groq",   "model": settings.GROQ_REASONING_MODEL},
-    "macro_analyst":        {"provider": "nvidia", "model": settings.NVIDIA_MODEL},
-    "news_analyst":         {"provider": "mistral","model": settings.MISTRAL_MODEL},
+    "news_analyst":         {"provider": "gemini", "model": settings.GEMINI_MODEL},
+    "bull_researcher":      {"provider": "gemini", "model": settings.GEMINI_MODEL},
+    "bear_researcher":      {"provider": "gemini", "model": settings.GEMINI_MODEL},
+    "multilingual_synthesis": {"provider": "gemini", "model": settings.GEMINI_MODEL},
 
-    # Researchers Debate
-    "bull_researcher":      {"provider": "groq",   "model": settings.GROQ_REASONING_MODEL},
-    "bear_researcher":      {"provider": "groq",   "model": settings.GROQ_REASONING_MODEL},
+    # Groq GPT Roles: Second opinion, Social sentiment, Risk Manager, Portfolio Manager
+    "technical_analyst":    {"provider": "groq",   "model": settings.GROQ_MODEL},
+    "sentiment_analyst":    {"provider": "groq",   "model": settings.GROQ_MODEL},
+    "trader":               {"provider": "groq",   "model": settings.GROQ_MODEL},
+    "risk_manager":         {"provider": "groq",   "model": settings.GROQ_MODEL},
+    "portfolio_manager":    {"provider": "groq",   "model": settings.GROQ_MODEL},
 
-    # Decision Core (Agent Router)
-    "trader":               {"provider": "agent_router", "model": settings.AGENT_ROUTER_TRADER_MODEL},
-    "risk_manager":         {"provider": "agent_router", "model": settings.AGENT_ROUTER_RISK_MANAGER_MODEL},
-    "portfolio_manager":    {"provider": "agent_router", "model": settings.AGENT_ROUTER_PORTFOLIO_MANAGER_MODEL},
-
-    # Universal Fallback
-    "fallback_provider":    "openrouter",
+    # Fallback Chain
+    "fallback_chain": {
+        "gemini": "groq",
+        "groq": "gemini",
+    },
 }

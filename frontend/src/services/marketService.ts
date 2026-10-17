@@ -206,7 +206,32 @@ export interface SearchResultItem {
   currency: string;
 }
 
+export type MarketState = "OPEN" | "PRE_OPEN" | "AFTER_CLOSE" | "OVERNIGHT" | "WEEKEND" | "HOLIDAY";
+
+export interface MarketStatus {
+  state: MarketState;
+  is_open: boolean;
+  now_ist: string;
+  next_open_ist: string;
+  next_close_ist: string | null;
+  last_session_date: string;
+  seconds_to_next_open: number;
+  reason: string | null;
+  is_demo?: boolean;
+}
+
+export const getDemoStateFromUrl = (): string | null => {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  return params.get("demoState") || params.get("demo_state") || null;
+};
+
 export const marketService = {
+  getMarketStatus: async (demoStateOverride?: string): Promise<MarketStatus> => {
+    const demo = demoStateOverride || getDemoStateFromUrl();
+    const query = demo ? `?demoState=${encodeURIComponent(demo)}` : "";
+    return api.get<MarketStatus>(`/market/status${query}`);
+  },
   searchSymbols: async (query: string): Promise<SearchResultItem[]> => {
     if (!query || !query.trim()) return [];
     try {
@@ -235,3 +260,4 @@ export const marketService = {
     return api.post<any>("/prediction/backtest", { symbol, horizonDays });
   },
 };
+

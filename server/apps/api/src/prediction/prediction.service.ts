@@ -15,6 +15,9 @@ import { FusionEngine, FusionResult } from "./fusionEngine";
 import { ProbabilityEngine, HorizonKey, HorizonProbability } from "./probabilityEngine";
 import { ConfidenceEngine, ConfidenceBreakdown } from "./confidenceEngine";
 import { Prediction, IPrediction } from "../db/models";
+import mongoose from "mongoose";
+
+const _inMemoryPredictions = new Map<string, any>();
 
 export interface PredictionPipelineResult {
   symbol: string;
@@ -113,17 +116,17 @@ export class PredictionService {
         techIndicators,
         histAnalysis,
         patterns,
-        userApiKeys?.groq
+        userApiKeys?.groq || userApiKeys?.gemini
       ),
       FundamentalAgent.analyze(
         marketData.symbol,
         marketData.fundamentals,
-        userApiKeys?.mistral
+        userApiKeys?.gemini || userApiKeys?.groq
       ),
       SentimentAgent.analyze(
         marketData.symbol,
         marketData.news,
-        userApiKeys?.gemini
+        userApiKeys?.gemini || userApiKeys?.groq
       ),
     ]);
 
@@ -134,7 +137,7 @@ export class PredictionService {
       techAgentOut,
       fundAgentOut,
       sentAgentOut,
-      userApiKeys?.nvidia
+      userApiKeys?.groq || userApiKeys?.gemini
     );
 
     // Verification Agent cross-examines all findings
@@ -144,7 +147,7 @@ export class PredictionService {
       fundAgentOut,
       sentAgentOut,
       riskAgentOut,
-      userApiKeys?.openrouter
+      userApiKeys?.groq || userApiKeys?.gemini || userApiKeys?.openrouter
     );
 
     // ---------------------------------------------------------
@@ -210,40 +213,42 @@ export class PredictionService {
     };
 
     // ---------------------------------------------------------
-    // Phase 13: Store Prediction in MongoDB
+    // Phase 13: Store Prediction in MongoDB & Memory Cache
     // ---------------------------------------------------------
     let predictionId: string | undefined;
-    try {
-      const predDoc = await Prediction.create({
-        userId: userId || undefined,
-        symbol: marketData.symbol,
-        exchange: marketData.exchange,
-        timestamp: new Date(),
-        timestamps,
-        market_snapshot: marketSnapshot,
-        technical: { indicators: techIndicators, agent: techAgentOut },
-        fundamental: { ratios: marketData.fundamentals, agent: fundAgentOut },
-        sentiment: { news_count: marketData.news.length, agent: sentAgentOut },
-        risk: { metrics: riskMetrics, agent: riskAgentOut },
-        historical: { analysis: histAnalysis, patterns, regime },
-        verification: verificationOut,
-        prediction: {
-          horizon,
-          up: activeHorizonProb.up,
-          sideways: activeHorizonProb.sideways,
-          down: activeHorizonProb.down,
-          confidence: confidenceBreakdown.overall_confidence,
-          raw_score: fusionResult.risk_adjusted_score,
-          direction: fusionResult.direction,
-        },
-        horizons,
-      });
-      predictionId = predDoc._id.toString();
-    } catch (saveErr) {
-      console.warn(`[PredictionService] Warning saving prediction to database:`, (saveErr as Error).message);
+    if (mongoose.connection?.readyState === 1) {
+      try {
+        const predDoc = await Prediction.create({
+          userId: userId || undefined,
+          symbol: marketData.symbol,
+          exchange: marketData.exchange,
+          timestamp: new Date(),
+          timestamps,
+          market_snapshot: marketSnapshot,
+          technical: { indicators: techIndicators, agent: techAgentOut },
+          fundamental: { ratios: marketData.fundamentals, agent: fundAgentOut },
+          sentiment: { news_count: marketData.news.length, agent: sentAgentOut },
+          risk: { metrics: riskMetrics, agent: riskAgentOut },
+          historical: { analysis: histAnalysis, patterns, regime },
+          verification: verificationOut,
+          prediction: {
+            horizon,
+            up: activeHorizonProb.up,
+            sideways: activeHorizonProb.sideways,
+            down: activeHorizonProb.down,
+            confidence: confidenceBreakdown.overall_confidence,
+            raw_score: fusionResult.risk_adjusted_score,
+            direction: fusionResult.direction,
+          },
+          horizons,
+        });
+        predictionId = predDoc._id.toString();
+      } catch (saveErr) {
+        console.warn(`[PredictionService] Warning saving prediction to database:`, (saveErr as Error).message);
+      }
     }
 
-    return {
+    const finalResult: PredictionPipelineResult = {
       symbol: marketData.symbol,
       exchange: marketData.exchange,
       companyName: marketData.companyName,
@@ -271,14 +276,27 @@ export class PredictionService {
       },
       predictionId,
     };
+
+    _inMemoryPredictions.set(marketData.symbol.toUpperCase(), finalResult);
+    return finalResult;
   }
 
   /**
-   * Retrieves the latest stored prediction for a symbol.
+   * Retrieves the latest stored prediction for a symbol without hanging if Mongo is offline.
    */
   public static async getLatestPrediction(symbol: string): Promise<any> {
     const clean = symbol.trim().toUpperCase().replace(/\.NS$/, "").replace(/\.BO$/, "");
-    return Prediction.findOne({ symbol: clean }).sort({ timestamp: -1 });
+    if (_inMemoryPredictions.has(clean)) {
+      return _inMemoryPredictions.get(clean);
+    }
+    if (mongoose.connection?.readyState === 1) {
+      try {
+        return await Prediction.findOne({ symbol: clean }).sort({ timestamp: -1 });
+      } catch (_err) {
+        return null;
+      }
+    }
+    return null;
   }
 
   /**
@@ -286,6 +304,14 @@ export class PredictionService {
    */
   public static async getPredictionHistory(symbol: string, limit: number = 20): Promise<any[]> {
     const clean = symbol.trim().toUpperCase().replace(/\.NS$/, "").replace(/\.BO$/, "");
-    return Prediction.find({ symbol: clean }).sort({ timestamp: -1 }).limit(limit);
+    if (mongoose.connection?.readyState === 1) {
+      try {
+        return await Prediction.find({ symbol: clean }).sort({ timestamp: -1 }).limit(limit);
+      } catch (_err) {
+        return [];
+      }
+    }
+    const cached = _inMemoryPredictions.get(clean);
+    return cached ? [cached] : [];
   }
 }

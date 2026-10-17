@@ -1,4 +1,5 @@
-import { MistralProvider } from "../providers/mistral.provider";
+import { GeminiProvider } from "../providers/gemini.provider";
+import { GroqProvider } from "../providers/groq.provider";
 import { OpenRouterProvider } from "../providers/openrouter.provider";
 import { FundamentalsData } from "../market/fundamentals.service";
 
@@ -54,9 +55,9 @@ Financial Ratios (${fundamentals.asOfQuarter}):
 Evaluate the fundamental strength, valuation, and capital structure.
 `;
 
-    // 1. Try Mistral
+    // 1. Try Gemini
     try {
-      const res = await MistralProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
+      const res = await GeminiProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
       return {
         score: Math.min(100, Math.max(0, Number(res.data.score) || 65)),
         confidence: Math.min(100, Math.max(0, Number(res.data.confidence) || 75)),
@@ -68,11 +69,29 @@ Evaluate the fundamental strength, valuation, and capital structure.
         provider: res.provider,
         model: res.model,
       };
-    } catch (mistralErr) {
-      console.warn(`[FundamentalAgent] Mistral call failed, attempting OpenRouter fallback:`, (mistralErr as Error).message);
+    } catch (geminiErr) {
+      console.warn(`[FundamentalAgent] Gemini call failed, attempting Groq fallback:`, (geminiErr as Error).message);
     }
 
-    // 2. Try OpenRouter Fallback
+    // 2. Try Groq Fallback
+    try {
+      const res = await GroqProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
+      return {
+        score: Math.min(100, Math.max(0, Number(res.data.score) || 65)),
+        confidence: Math.min(100, Math.max(0, Number(res.data.confidence) || 75)),
+        growth: res.data.growth || (fundamentals.revenueGrowthYoY > 10 ? "strong" : "moderate"),
+        valuation: res.data.valuation || fundamentals.valuation,
+        financial_health: res.data.financial_health || fundamentals.financialHealth,
+        risks: Array.isArray(res.data.risks) ? res.data.risks : ["Industry competition"],
+        reasoning_summary: res.data.reasoning_summary || "Fundamentals exhibit sound capital structure and sustainable profitability.",
+        provider: res.provider,
+        model: res.model,
+      };
+    } catch (groqErr) {
+      console.warn(`[FundamentalAgent] Groq call failed, attempting OpenRouter fallback:`, (groqErr as Error).message);
+    }
+
+    // 3. Try OpenRouter Fallback (optional, silent if no key)
     try {
       const res = await OpenRouterProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt);
       return {
@@ -86,11 +105,11 @@ Evaluate the fundamental strength, valuation, and capital structure.
         provider: res.provider,
         model: res.model,
       };
-    } catch (openRouterErr) {
-      console.warn(`[FundamentalAgent] OpenRouter fallback failed, using deterministic score:`, (openRouterErr as Error).message);
+    } catch {
+      // OpenRouter skipped or failed
     }
 
-    // 3. Deterministic quantitative fallback
+    // 4. Deterministic quantitative fallback
     return this.generateDeterministicFundamentalOutput(fundamentals);
   }
 
@@ -126,8 +145,8 @@ Evaluate the fundamental strength, valuation, and capital structure.
         fundamentals.peRatio > 30 ? "Premium valuation multiple" : "Input cost pressure",
       ],
       reasoning_summary: `${fundamentals.companyName} exhibits ${fundamentals.financialHealth} financial health with ROE of ${fundamentals.roePct}%, debt-to-equity of ${fundamentals.debtToEquity}, and YoY revenue expansion of ${fundamentals.revenueGrowthYoY}%.`,
-      provider: "mistral (calibrated fallback)",
-      model: MistralProvider.MODEL,
+      provider: "gemini (calibrated fallback)",
+      model: GeminiProvider.PRIMARY_MODEL,
     };
   }
 }

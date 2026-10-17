@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
+import { ShieldCheck, AlertCircle, ArrowRight } from 'lucide-react';
 import { onboardingService } from '@/services/onboardingService';
 import { useAuthStore } from '@/store/authStore';
 import logoImg from '@/assets/logo.png';
@@ -10,11 +10,9 @@ export function OnboardingPage() {
   const checkAuth = useAuthStore((s) => s.checkAuth);
 
   const [riskCategory, setRiskCategory] = useState<'conservative' | 'balanced' | 'aggressive'>('balanced');
-  const [allocatableCapital, setAllocatableCapital] = useState('10000');
+  const [allocatableCapital, setAllocatableCapital] = useState('1000000');
   const [maxPositionPct, setMaxPositionPct] = useState('10');
   const [maxDailyLossPct, setMaxDailyLossPct] = useState('3');
-  const [alpacaPaperKey, setAlpacaPaperKey] = useState('');
-  const [alpacaPaperSecret, setAlpacaPaperSecret] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -28,7 +26,7 @@ export function OnboardingPage() {
     const maxLossNum = parseFloat(maxDailyLossPct);
 
     if (isNaN(capitalNum) || capitalNum <= 0) {
-      setError('Please enter a valid allocatable capital amount.');
+      setError('Please enter a valid allocatable capital amount in INR.');
       return;
     }
     if (isNaN(maxPosNum) || maxPosNum < 1 || maxPosNum > 25) {
@@ -47,8 +45,6 @@ export function OnboardingPage() {
         allocatableCapital: capitalNum,
         maxPositionPct: maxPosNum,
         maxDailyLossPct: maxLossNum,
-        alpacaPaperKey: alpacaPaperKey.trim(),
-        alpacaPaperSecret: alpacaPaperSecret.trim(),
       });
 
       // Refresh auth state to ensure risk profile is stored in Zustand
@@ -68,8 +64,8 @@ export function OnboardingPage() {
         <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-7 flex items-center gap-4">
           <img src={logoImg} alt="TradeVault Logo" className="h-10 w-auto object-contain rounded-xl" />
           <div>
-            <h1 className="text-xl font-bold text-white">Welcome to TradeVault</h1>
-            <p className="text-indigo-100 text-sm mt-0.5">Customize your simulation environment — no broker keys required</p>
+            <h1 className="text-xl font-bold text-white">Welcome to TradeVault India</h1>
+            <p className="text-indigo-100 text-sm mt-0.5">Customize your Indian equities simulation — default ₹10,00,000 virtual INR</p>
           </div>
         </div>
 
@@ -81,11 +77,11 @@ export function OnboardingPage() {
             </div>
             <div>
               <p className="text-sm font-bold text-emerald-950 flex items-center gap-2">
-                <span>Free Paper Trading Sandbox Activated</span>
+                <span>Free NSE Paper Trading Sandbox Activated</span>
                 <span className="bg-emerald-200/70 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">100% Risk Free</span>
               </p>
               <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
-                TradeVault provides a complete virtual paper trading environment with simulated live data feeds. You can explore multi-agent AI debates, test quant strategies, and backtest without needing to enter any broker keys.
+                TradeVault provides a complete virtual paper trading environment with simulated and live NSE data feeds. You can explore multi-agent AI debates, test quant strategies, and backtest without needing to enter any broker keys.
               </p>
             </div>
           </div>
@@ -113,13 +109,13 @@ export function OnboardingPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-foreground mb-1.5">Allocatable Capital ($)</label>
+              <label className="block text-sm font-semibold text-foreground mb-1.5">Allocatable Capital (₹ INR)</label>
               <input
                 type="number"
-                min="100"
+                min="1000"
                 value={allocatableCapital}
                 onChange={(e) => setAllocatableCapital(e.target.value)}
-                placeholder="10000"
+                placeholder="1000000"
                 required
                 className="w-full bg-white border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm"
               />
@@ -152,40 +148,6 @@ export function OnboardingPage() {
                 className="w-full bg-white border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm"
               />
             </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                Alpaca Paper API Key <span className="text-muted-foreground text-xs font-normal">(Optional for mock testing)</span>
-              </label>
-              <input
-                type="password"
-                value={alpacaPaperKey}
-                onChange={(e) => setAlpacaPaperKey(e.target.value)}
-                placeholder="PK..."
-                className="w-full bg-white border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm font-mono"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                Alpaca Paper Secret <span className="text-muted-foreground text-xs font-normal">(Optional for mock testing)</span>
-              </label>
-              <input
-                type="password"
-                value={alpacaPaperSecret}
-                onChange={(e) => setAlpacaPaperSecret(e.target.value)}
-                placeholder="Secret..."
-                className="w-full bg-white border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm font-mono"
-              />
-            </div>
-          </div>
-
-          {/* Optional Broker Notice */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between text-xs text-slate-600">
-            <span className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-indigo-600 shrink-0" />
-              <span>Have an external Alpaca broker account? You can optionally connect it anytime in <strong>Settings → API Keys</strong>.</span>
-            </span>
           </div>
 
           {/* Action buttons */}

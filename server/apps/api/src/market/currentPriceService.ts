@@ -190,10 +190,9 @@ export class CurrentPriceService {
       base = 500.0 + (Math.abs(hash) % 3500);
     }
 
-    const t = Date.now() / 1000;
-    const wave = Math.sin(t / 60) * (base * 0.004);
-    const price = Number((base + wave).toFixed(2));
-    const changePct = Number((Math.sin(t / 120 + symbol.length) * 1.8).toFixed(2));
+    const price = Number(base.toFixed(2));
+    const seed = symbol.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const changePct = Number((((seed % 35) - 16) * 0.1).toFixed(2));
     const previousClose = Number((price / (1 + changePct / 100)).toFixed(2));
     const change = Number((price - previousClose).toFixed(2));
 

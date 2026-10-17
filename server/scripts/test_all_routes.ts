@@ -146,8 +146,6 @@ async function runRouteTestSuite() {
       maxDailyLossPct: 5,
       marketFocus: ["equities"],
       notificationEmail: onboardingEmail,
-      alpacaPaperKey: "PK_TEST_SAMPLE_KEY_12345",
-      alpacaPaperSecret: "SK_TEST_SAMPLE_SECRET_67890",
     });
     // Switch to this user for the rest of tests
     if (res.data?.token) authToken = res.data.token;

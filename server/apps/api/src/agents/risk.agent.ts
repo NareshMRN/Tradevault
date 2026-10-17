@@ -1,4 +1,5 @@
-import { NvidiaProvider } from "../providers/nvidia.provider";
+import { GroqProvider } from "../providers/groq.provider";
+import { GeminiProvider } from "../providers/gemini.provider";
 import { OpenRouterProvider } from "../providers/openrouter.provider";
 import { RiskMetricsObject } from "../analysis/riskMetrics";
 import { TechnicalAgentOutput } from "./technical.agent";
@@ -58,9 +59,9 @@ Colleague Analyst Findings:
 Synthesize overall downside risk, market exposure, and volatility constraints.
 `;
 
-    // 1. Try NVIDIA NIM
+    // 1. Try Groq (Risk Manager role)
     try {
-      const res = await NvidiaProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
+      const res = await GroqProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
       const score = Math.min(100, Math.max(0, Number(res.data.risk_score) || 45));
       const level = res.data.risk_level || (score > 65 ? "high" : score > 35 ? "medium" : "low");
       return {
@@ -72,11 +73,29 @@ Synthesize overall downside risk, market exposure, and volatility constraints.
         provider: res.provider,
         model: res.model,
       };
-    } catch (nvidiaErr) {
-      console.warn(`[RiskAgent] NVIDIA NIM call failed, attempting OpenRouter fallback:`, (nvidiaErr as Error).message);
+    } catch (groqErr) {
+      console.warn(`[RiskAgent] Groq call failed, attempting Gemini fallback:`, (groqErr as Error).message);
     }
 
-    // 2. Try OpenRouter Fallback
+    // 2. Try Gemini Fallback
+    try {
+      const res = await GeminiProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
+      const score = Math.min(100, Math.max(0, Number(res.data.risk_score) || 45));
+      const level = res.data.risk_level || (score > 65 ? "high" : score > 35 ? "medium" : "low");
+      return {
+        risk_score: score,
+        risk_level: level,
+        confidence: Math.min(100, Math.max(0, Number(res.data.confidence) || 80)),
+        risks: Array.isArray(res.data.risks) ? res.data.risks : ["Volatility expansion risk"],
+        reasoning_summary: res.data.reasoning_summary || "Portfolio risk metrics remain within allowable risk bounds.",
+        provider: res.provider,
+        model: res.model,
+      };
+    } catch (geminiErr) {
+      console.warn(`[RiskAgent] Gemini fallback failed, attempting OpenRouter fallback:`, (geminiErr as Error).message);
+    }
+
+    // 3. Try OpenRouter Fallback (optional, silent if no key)
     try {
       const res = await OpenRouterProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt);
       const score = Math.min(100, Math.max(0, Number(res.data.risk_score) || 45));
@@ -90,11 +109,11 @@ Synthesize overall downside risk, market exposure, and volatility constraints.
         provider: res.provider,
         model: res.model,
       };
-    } catch (openRouterErr) {
-      console.warn(`[RiskAgent] OpenRouter fallback failed, using deterministic score:`, (openRouterErr as Error).message);
+    } catch {
+      // OpenRouter skipped or failed
     }
 
-    // 3. Deterministic quantitative fallback
+    // 4. Deterministic quantitative fallback
     return this.generateDeterministicRiskOutput(riskMetrics, techOutput, fundOutput);
   }
 
@@ -127,8 +146,8 @@ Synthesize overall downside risk, market exposure, and volatility constraints.
         `Beta of ${riskMetrics.beta} relative to broad index`,
       ],
       reasoning_summary: `Portfolio exposure assessed at ${riskLevel} risk tier (${clampedRisk}/100) with 1-day 95% Value-at-Risk of ${riskMetrics.var95}%. Fundamental and technical stop-loss boundaries remain intact.`,
-      provider: "nvidia (calibrated fallback)",
-      model: NvidiaProvider.MODEL,
+      provider: "groq (calibrated fallback)",
+      model: GroqProvider.MODEL,
     };
   }
 }

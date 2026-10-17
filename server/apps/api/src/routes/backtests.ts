@@ -6,7 +6,6 @@ import { requireAuth } from "../middleware/auth";
 import { validateBody } from "../middleware/validate";
 import { RealBacktestEngine } from "../services/realBacktestEngine";
 import { inMemoryStore } from "../db/inMemoryStore";
-import { logAuditEvent } from "../services/auditLogger";
 
 export const backtestsRouter = Router();
 
@@ -81,22 +80,6 @@ backtestsRouter.post(
               },
             });
           }
-
-          await logAuditEvent({
-            userId: req.user!.id,
-            eventType: "backtest_completed",
-            entityType: "backtest",
-            entityId: backtestId,
-            payload: {
-              strategyName,
-              sharpeRatio: result.sharpeRatio,
-              deflatedSharpeRatio: result.deflatedSharpeRatio,
-              pbo: result.probabilityOfBacktestOverfitting,
-              eligible: result.isEligibleForPaperTrading,
-              annualizedReturn: result.annualizedReturn,
-              realData: true,
-            },
-          }).catch(() => {});
         } catch (err: any) {
           console.error("[Backtest Engine Error]", err);
           if (isDb) {

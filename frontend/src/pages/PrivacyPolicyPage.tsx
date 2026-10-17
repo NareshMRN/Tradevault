@@ -61,7 +61,7 @@ export function PrivacyPolicyPage() {
                 <strong>Account Credentials:</strong> Display name, email address, and hashed authentication records. We do not store plaintext passwords.
               </li>
               <li>
-                <strong>External Broker Credentials (Optional):</strong> If you choose to connect an Alpaca account, we collect your API Key and Secret. These are immediately encrypted using AES-256-GCM before database persistence.
+                <strong>External Broker Credentials (Optional):</strong> If you choose to connect a broker account, we collect your API credentials. These are immediately encrypted using AES-256-GCM before database persistence.
               </li>
               <li>
                 <strong>Platform Usage & Research Telemetry:</strong> Monitored stock symbols, watchlist configurations, backtest inputs, and proposal approval actions.

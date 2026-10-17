@@ -54,7 +54,7 @@ const RiskProfileSchema = new Schema<IRiskProfile>(
 // ==========================================
 export interface IApiCredential extends Document {
   userId: Types.ObjectId;
-  provider: "groq" | "gemini" | "mistral" | "nvidia" | "openrouter" | "agent_router" | "alpaca_paper" | "alpaca_live";
+  provider: "groq" | "gemini" | "openrouter" | "agent_router";
   encryptedKey: Buffer;
   encryptedSecret?: Buffer;
   keyIv: Buffer;
@@ -67,7 +67,7 @@ const ApiCredentialSchema = new Schema<IApiCredential>(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     provider: {
       type: String,
-      enum: ["groq", "gemini", "mistral", "nvidia", "openrouter", "agent_router", "alpaca_paper", "alpaca_live"],
+      enum: ["groq", "gemini", "openrouter", "agent_router"],
       required: true,
     },
     encryptedKey: { type: Buffer, required: true },
@@ -242,7 +242,7 @@ export interface IAgentMessage extends Document {
     | "trader"
     | "risk_manager"
     | "portfolio_manager";
-  llmProvider: "groq" | "gemini" | "mistral" | "nvidia" | "openrouter" | "agent_router";
+  llmProvider: "groq" | "gemini" | "openrouter" | "agent_router";
   sequenceIndex: number;
   content: string;
   structuredOutput?: Record<string, any>;
@@ -270,7 +270,7 @@ const AgentMessageSchema = new Schema<IAgentMessage>(
     },
     llmProvider: {
       type: String,
-      enum: ["groq", "gemini", "mistral", "nvidia", "openrouter", "agent_router"],
+      enum: ["groq", "gemini", "openrouter", "agent_router"],
       required: true,
     },
     sequenceIndex: { type: Number, required: true },

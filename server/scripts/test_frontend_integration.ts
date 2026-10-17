@@ -78,8 +78,6 @@ async function run() {
         allocatableCapital: 25000,
         maxPositionPct: 15,
         maxDailyLossPct: 4,
-        alpacaPaperKey: "PK_TEST_KEY_12345",
-        alpacaPaperSecret: "SK_TEST_SECRET_67890",
       }),
     });
     const data = await res.json();

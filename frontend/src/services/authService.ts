@@ -15,7 +15,7 @@ export interface AuthResponse {
 export interface MeResponse {
   user: UserProfile;
   riskProfile: any;
-  killSwitchEngaged: boolean;
+  killSwitchEngaged?: boolean;
 }
 
 export const authService = {

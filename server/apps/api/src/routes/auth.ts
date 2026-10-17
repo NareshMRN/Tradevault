@@ -2,11 +2,10 @@ import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import { User, RiskProfile, KillSwitchState } from "../db/models";
+import { User, RiskProfile } from "../db/models";
 import { inMemoryStore } from "../db/inMemoryStore";
 import { env } from "../config/env";
 import { requireAuth } from "../middleware/auth";
-import { logAuditEvent } from "../services/auditLogger";
 
 export const authRouter = Router();
 
@@ -39,14 +38,6 @@ authRouter.post("/register", async (req: Request, res: Response): Promise<void> 
         displayName: displayName.trim(),
         role: "user",
       });
-
-      // Initialize Kill Switch state
-      try {
-        await KillSwitchState.create({
-          userId: user._id,
-          isEngaged: false,
-        });
-      } catch (e) {}
     } else {
       // Offline / standalone in-memory mode
       const existing = await inMemoryStore.findUserByEmail(cleanEmail);
@@ -76,16 +67,6 @@ authRouter.post("/register", async (req: Request, res: Response): Promise<void> 
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
-    try {
-      await logAuditEvent({
-        userId: user._id,
-        eventType: "user_registered",
-        entityType: "user",
-        entityId: user._id.toString(),
-        payload: { email: user.email },
-      });
-    } catch (e) {}
 
     res.status(201).json({
       user: {
@@ -165,16 +146,6 @@ authRouter.post("/login", async (req: Request, res: Response): Promise<void> => 
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    try {
-      await logAuditEvent({
-        userId: user._id,
-        eventType: "user_login",
-        entityType: "user",
-        entityId: user._id.toString(),
-        payload: { email: user.email },
-      });
-    } catch (e) {}
-
     res.json({
       user: {
         id: user._id.toString(),
@@ -209,12 +180,10 @@ authRouter.get("/me", requireAuth, async (req: Request, res: Response): Promise<
       }
 
       const riskProfile = await RiskProfile.findOne({ userId: user._id });
-      const killSwitch = await KillSwitchState.findOne({ userId: user._id });
 
       res.json({
         user,
         riskProfile,
-        killSwitchEngaged: killSwitch?.isEngaged ?? false,
       });
     } else {
       // In-memory fallback
@@ -227,12 +196,10 @@ authRouter.get("/me", requireAuth, async (req: Request, res: Response): Promise<
       };
 
       const riskProfile = inMemoryStore.getRiskProfile(req.user!.id);
-      const killSwitchEngaged = inMemoryStore.isKillSwitchEngaged(req.user!.id);
 
       res.json({
         user,
         riskProfile,
-        killSwitchEngaged,
       });
     }
   } catch (err: any) {

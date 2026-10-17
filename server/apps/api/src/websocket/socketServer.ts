@@ -73,20 +73,3 @@ export function streamAgentMessage(runId: string, message: any): void {
   }
 }
 
-/**
- * Broadcasts an update to a user's order status.
- */
-export function broadcastOrderStatus(userId: string, order: any): void {
-  if (io) {
-    io.to(`user:${userId}`).emit("order:status", order);
-  }
-}
-
-/**
- * Broadcasts a kill-switch toggle update.
- */
-export function broadcastKillSwitchUpdate(userId: string, state: any): void {
-  if (io) {
-    io.to(`user:${userId}`).emit("kill_switch:update", state);
-  }
-}

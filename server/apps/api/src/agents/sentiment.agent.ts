@@ -1,4 +1,5 @@
 import { GeminiProvider } from "../providers/gemini.provider";
+import { GroqProvider } from "../providers/groq.provider";
 import { OpenRouterProvider } from "../providers/openrouter.provider";
 import { NewsArticle } from "../market/news.service";
 
@@ -66,10 +67,28 @@ Synthesize the market sentiment, identify positive and negative developments, an
         model: res.model,
       };
     } catch (geminiErr) {
-      console.warn(`[SentimentAgent] Gemini call failed, attempting OpenRouter fallback:`, (geminiErr as Error).message);
+      console.warn(`[SentimentAgent] Gemini call failed, attempting Groq fallback:`, (geminiErr as Error).message);
     }
 
-    // 2. Try OpenRouter Fallback
+    // 2. Try Groq Fallback
+    try {
+      const res = await GroqProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
+      return {
+        sentiment: res.data.sentiment || (res.data.score > 55 ? "positive" : res.data.score < 45 ? "negative" : "neutral"),
+        score: Math.min(100, Math.max(0, Number(res.data.score) || 65)),
+        confidence: Math.min(100, Math.max(0, Number(res.data.confidence) || 70)),
+        positive_events: Array.isArray(res.data.positive_events) ? res.data.positive_events : ["Positive developments"],
+        negative_events: Array.isArray(res.data.negative_events) ? res.data.negative_events : [],
+        catalysts: Array.isArray(res.data.catalysts) ? res.data.catalysts : ["Corporate catalyst signals"],
+        reasoning_summary: res.data.reasoning_summary || "Sentiment signals indicate constructive news backdrop.",
+        provider: res.provider,
+        model: res.model,
+      };
+    } catch (groqErr) {
+      console.warn(`[SentimentAgent] Groq fallback failed, attempting OpenRouter fallback:`, (groqErr as Error).message);
+    }
+
+    // 3. Try OpenRouter Fallback (optional, silent if no key)
     try {
       const res = await OpenRouterProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt);
       return {
@@ -83,11 +102,11 @@ Synthesize the market sentiment, identify positive and negative developments, an
         provider: res.provider,
         model: res.model,
       };
-    } catch (openRouterErr) {
-      console.warn(`[SentimentAgent] OpenRouter fallback failed, using deterministic score:`, (openRouterErr as Error).message);
+    } catch {
+      // OpenRouter skipped or failed
     }
 
-    // 3. Deterministic quantitative fallback
+    // 4. Deterministic quantitative fallback
     return this.generateDeterministicSentimentOutput(symbol, news);
   }
 

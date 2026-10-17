@@ -688,10 +688,10 @@ export function LandingPage() {
                 Live backtesting verification executed via TradeVault Python microservice
               </span>
               <Link
-                to="/proposals"
+                to="/picks"
                 className="font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
               >
-                <span>View Full Proposal Inspector</span>
+                <span>View AI Top Picks</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -771,7 +771,7 @@ export function LandingPage() {
                 <BarChart3 className="h-4 w-4" />
               </div>
               <p className="text-xs font-bold text-slate-900">4. Quant & Broker</p>
-              <p className="text-[11px] text-slate-500">Qlib + Alpaca API</p>
+              <p className="text-[11px] text-slate-500">Qlib + NSE Market API</p>
             </button>
           </div>
 
@@ -870,11 +870,11 @@ export function LandingPage() {
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/60 px-2.5 py-1 rounded-md">
                     Quantitative & Execution Engine
                   </span>
-                  <span className="text-xs font-mono text-slate-500">Qlib • GluonTS • Alpaca API</span>
+                  <span className="text-xs font-mono text-slate-500">Qlib • GluonTS • Broker Rails</span>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Mathematical Robustness & Deflated Sharpe Ratio Gates</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Evaluates 5-factor normalized momentum and volatility, generates probabilistic P10-P90 forecast quantile distributions, enforces the hard backtest overfitting gate, and dispatches fractional Kelly sized orders to Alpaca.
+                  Evaluates 5-factor normalized momentum and volatility, generates probabilistic P10-P90 forecast quantile distributions, enforces the hard backtest overfitting gate, and dispatches fractional Kelly sized orders to broker rails.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3">
                   <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-xs">
@@ -887,7 +887,7 @@ export function LandingPage() {
                   </div>
                   <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-xs">
                     <p className="font-bold text-slate-800">Broker Execution</p>
-                    <p className="text-slate-500 mt-1">Alpaca Paper & Live API</p>
+                    <p className="text-slate-500 mt-1">Paper & Live Trading Rails</p>
                   </div>
                 </div>
               </div>
@@ -1088,7 +1088,7 @@ export function LandingPage() {
                 <div className="bg-white/5 border border-white/10 p-5 rounded-2xl">
                   <p className="font-bold text-white text-base">Paper-First Isolation</p>
                   <p className="text-xs text-indigo-200 mt-2 leading-relaxed">
-                    Defaults strictly to Alpaca Paper sandbox. Live trading requires typed confirmation phrases and expires in 24 hours.
+                    Defaults strictly to Virtual Paper sandbox. Live trading requires typed confirmation phrases and expires in 24 hours.
                   </p>
                 </div>
 
@@ -1133,7 +1133,7 @@ export function LandingPage() {
               },
               {
                 q: 'Is my real money at risk when running TradeVault?',
-                a: 'No. The platform defaults 100% to Alpaca Paper Trading. Live execution is disabled by default (ALLOW_LIVE_TRADING=false) and requires an explicit timed confirmation in the UI to unlock for a 24-hour window.',
+                a: 'No. The platform defaults 100% to Virtual Paper Trading. Live execution is disabled by default (ALLOW_LIVE_TRADING=false) and requires an explicit timed confirmation in the UI to unlock for a 24-hour window.',
               },
               {
                 q: 'Which LLM API keys do I need to get started?',

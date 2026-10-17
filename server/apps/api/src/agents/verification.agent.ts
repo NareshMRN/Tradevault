@@ -1,3 +1,5 @@
+import { GroqProvider } from "../providers/groq.provider";
+import { GeminiProvider } from "../providers/gemini.provider";
 import { OpenRouterProvider } from "../providers/openrouter.provider";
 import { TechnicalAgentOutput } from "./technical.agent";
 import { FundamentalAgentOutput } from "./fundamental.agent";
@@ -67,6 +69,39 @@ Multi-Agent Findings to Audit:
 Perform cross-examination and surface any contradictions, unsupported conclusions, or consensus strengths.
 `;
 
+    // 1. Try Groq (Auditor role)
+    try {
+      const res = await GroqProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
+      return {
+        agreement_score: Math.min(100, Math.max(0, Number(res.data.agreement_score) || 75)),
+        conflicts: Array.isArray(res.data.conflicts) ? res.data.conflicts : [],
+        warnings: Array.isArray(res.data.warnings) ? res.data.warnings : [],
+        verification_score: Math.min(100, Math.max(0, Number(res.data.verification_score) || 82)),
+        reasoning_summary: res.data.reasoning_summary || "Multi-agent audit confirms logical consistency across feature domains.",
+        provider: res.provider,
+        model: res.model,
+      };
+    } catch (groqErr) {
+      console.warn(`[VerificationAgent] Groq audit call failed, attempting Gemini fallback:`, (groqErr as Error).message);
+    }
+
+    // 2. Try Gemini Fallback
+    try {
+      const res = await GeminiProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
+      return {
+        agreement_score: Math.min(100, Math.max(0, Number(res.data.agreement_score) || 75)),
+        conflicts: Array.isArray(res.data.conflicts) ? res.data.conflicts : [],
+        warnings: Array.isArray(res.data.warnings) ? res.data.warnings : [],
+        verification_score: Math.min(100, Math.max(0, Number(res.data.verification_score) || 82)),
+        reasoning_summary: res.data.reasoning_summary || "Multi-agent audit confirms logical consistency across feature domains.",
+        provider: res.provider,
+        model: res.model,
+      };
+    } catch (geminiErr) {
+      console.warn(`[VerificationAgent] Gemini audit call failed, attempting OpenRouter fallback:`, (geminiErr as Error).message);
+    }
+
+    // 3. Try OpenRouter Fallback (optional, silent if no key)
     try {
       const res = await OpenRouterProvider.callStructured<any>(
         this.SYSTEM_PROMPT,
@@ -84,10 +119,12 @@ Perform cross-examination and surface any contradictions, unsupported conclusion
         provider: res.provider,
         model: res.model,
       };
-    } catch (err: any) {
-      console.warn(`[VerificationAgent] OpenRouter verification call failed, generating deterministic audit:`, err.message);
-      return this.generateDeterministicAudit(tech, fund, sent, risk);
+    } catch {
+      // OpenRouter skipped or failed
     }
+
+    // 4. Deterministic quantitative fallback
+    return this.generateDeterministicAudit(tech, fund, sent, risk);
   }
 
   private static generateDeterministicAudit(

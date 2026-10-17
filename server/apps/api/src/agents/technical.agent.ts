@@ -1,4 +1,5 @@
 import { GroqProvider } from "../providers/groq.provider";
+import { GeminiProvider } from "../providers/gemini.provider";
 import { OpenRouterProvider } from "../providers/openrouter.provider";
 import { TechnicalFeatureObject } from "../analysis/technicalIndicators";
 import { HistoricalAnalysisResult } from "../analysis/historicalAnalysis";
@@ -67,7 +68,7 @@ Historical Behavior:
 Provide your technical rating, direction, and reasoning.
 `;
 
-    // 1. Try Groq (deepseek-r1-distill-llama-70b)
+    // 1. Try Groq (gpt-oss-120b)
     try {
       const res = await GroqProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
       return {
@@ -81,10 +82,27 @@ Provide your technical rating, direction, and reasoning.
         model: res.model,
       };
     } catch (groqErr) {
-      console.warn(`[TechnicalAgent] Groq call failed, attempting OpenRouter fallback:`, (groqErr as Error).message);
+      console.warn(`[TechnicalAgent] Groq call failed, attempting Gemini fallback:`, (groqErr as Error).message);
     }
 
-    // 2. Try OpenRouter Fallback
+    // 2. Try Gemini Fallback
+    try {
+      const res = await GeminiProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt, userApiKey);
+      return {
+        direction: res.data.direction || (res.data.score > 55 ? "bullish" : res.data.score < 45 ? "bearish" : "neutral"),
+        score: Math.min(100, Math.max(0, Number(res.data.score) || 60)),
+        confidence: Math.min(100, Math.max(0, Number(res.data.confidence) || 75)),
+        signals: Array.isArray(res.data.signals) ? res.data.signals : tech.signals,
+        risks: Array.isArray(res.data.risks) ? res.data.risks : ["Volatility risk"],
+        reasoning_summary: res.data.reasoning_summary || "Technical indicators indicate constructive momentum above moving averages.",
+        provider: res.provider,
+        model: res.model,
+      };
+    } catch (geminiErr) {
+      console.warn(`[TechnicalAgent] Gemini fallback failed, attempting OpenRouter fallback:`, (geminiErr as Error).message);
+    }
+
+    // 3. Try OpenRouter Fallback (optional, silent if no key)
     try {
       const res = await OpenRouterProvider.callStructured<any>(this.SYSTEM_PROMPT, userPrompt);
       return {
@@ -97,11 +115,11 @@ Provide your technical rating, direction, and reasoning.
         provider: res.provider,
         model: res.model,
       };
-    } catch (openRouterErr) {
-      console.warn(`[TechnicalAgent] OpenRouter fallback failed, using deterministic score:`, (openRouterErr as Error).message);
+    } catch {
+      // OpenRouter skipped or failed
     }
 
-    // 3. Deterministic quantitative fallback
+    // 4. Deterministic quantitative fallback
     return this.generateDeterministicTechnicalOutput(tech, patterns, hist);
   }
 

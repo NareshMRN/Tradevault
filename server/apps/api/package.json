@@ -10,17 +10,13 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@alpacahq/alpaca-trade-api": "^3.1.2",
     "@confluence/shared-schemas": "*",
-    "@upstash/redis": "^1.39.0",
     "bcryptjs": "^2.4.3",
-    "bullmq": "^5.41.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
-    "ioredis": "^5.5.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.10.2",
     "morgan": "^1.12.1",

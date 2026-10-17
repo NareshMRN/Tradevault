@@ -4,7 +4,6 @@ import { ApiCredential } from "../db/models";
 import { requireAuth } from "../middleware/auth";
 import { validateBody } from "../middleware/validate";
 import { encryptCredential, decryptCredential, maskKey } from "../services/encryption";
-import { logAuditEvent } from "../services/auditLogger";
 
 export const credentialsRouter = Router();
 
@@ -32,13 +31,6 @@ credentialsRouter.post(
         },
         { upsert: true, new: true }
       );
-
-      await logAuditEvent({
-        userId: req.user!.id,
-        eventType: "credential_saved",
-        entityType: "api_credential",
-        payload: { provider, maskedKey: maskKey(key) },
-      });
 
       res.status(201).json({
         success: true,
@@ -96,13 +88,6 @@ credentialsRouter.delete(
     try {
       const provider = req.params.provider as ApiCredentialProvider;
       await ApiCredential.findOneAndDelete({ userId: req.user!.id, provider });
-
-      await logAuditEvent({
-        userId: req.user!.id,
-        eventType: "credential_deleted",
-        entityType: "api_credential",
-        payload: { provider },
-      });
 
       res.json({ success: true, message: `Credential for ${provider} removed.` });
     } catch (err: any) {

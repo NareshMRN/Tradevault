@@ -17,11 +17,11 @@ import { backtestsRouter } from "./routes/backtests";
 import { analysisRouter } from "./routes/analysis";
 import { proposalsRouter } from "./routes/proposals";
 import { ordersRouter } from "./routes/orders";
-import { killSwitchRouter } from "./routes/killSwitch";
-import { auditLogRouter } from "./routes/auditLog";
-import { adminRouter } from "./routes/admin";
 import { marketRouter } from "./routes/market";
 import { predictionRouter } from "./routes/prediction.routes";
+import { discoveryRouter } from "./routes/discovery";
+import { paperPortfolioRouter } from "./routes/paperPortfolio";
+import { mlScreeningRouter } from "./routes/mlScreening";
 import morgan from "morgan";
 
 export const app = express();
@@ -74,11 +74,11 @@ app.use("/api", backtestsRouter);
 app.use("/api", analysisRouter);
 app.use("/api", proposalsRouter);
 app.use("/api", ordersRouter);
-app.use("/api", killSwitchRouter);
-app.use("/api", auditLogRouter);
-app.use("/api", adminRouter);
 app.use("/api", marketRouter);
+app.use("/api", discoveryRouter);
+app.use("/api", paperPortfolioRouter);
 app.use("/api/prediction", predictionRouter);
+app.use("/api/ml", mlScreeningRouter);
 
 // Global Error Handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
