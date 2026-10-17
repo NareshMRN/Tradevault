@@ -1,0 +1,33 @@
+# Environment variables & secrets (NEVER COMMIT SENSITIVE KEYS)
+.env
+.env.local
+.env.*.local
+*.env
+
+# Dependencies
+node_modules/
+
+# TypeScript & Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

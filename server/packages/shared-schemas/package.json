@@ -1,0 +1,17 @@
+{
+  "name": "@confluence/shared-schemas",
+  "version": "1.0.0",
+  "description": "Shared Zod validation schemas and TypeScript interfaces for Confluence",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
